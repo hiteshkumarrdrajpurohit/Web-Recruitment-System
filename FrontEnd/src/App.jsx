@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
 import ApplicantProfile from "./components/ApplicantProfile";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         {/* HR Auth */}
         <Route path="/" element={<SignIn />} />
 
+        <Route path="/signup" element={<SignUp />} />
         {/* Applicant Auth */}
 
         {/* HR Routes */}
