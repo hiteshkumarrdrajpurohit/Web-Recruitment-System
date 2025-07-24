@@ -1,26 +1,29 @@
-import React, { useState, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, createContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-import SignIn from './components/SignIn'
+import SignIn from "./components/SignIn";
+import ApplicantProfile from "./components/ApplicantProfile";
+
 function App() {
- 
-
   return (
-   
-      <Router>
-        <Routes>
-          {/* HR Auth */}
-          <Route path="/" element={<SignIn />} />
+    <Router>
+      <Routes>
+        {/* HR Auth */}
+        <Route path="/" element={<SignIn />} />
 
-          {/* Applicant Auth */}
-         
-          {/* HR Routes */}
-          
-          {/* Applicant Routes */}
-         
-        </Routes>
-      </Router>
-   
+        {/* Applicant Auth */}
+
+        {/* HR Routes */}
+
+        {/* Applicant Routes */}
+        <Route path="/user/profile" element={<ApplicantProfile />} />
+      </Routes>
+    </Router>
   );
 }
 
