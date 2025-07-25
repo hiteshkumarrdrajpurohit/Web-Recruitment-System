@@ -76,3 +76,21 @@ export async function getProfile() {
     console.log(`exception: `, ex);
   }
 }
+
+export async function getAllJobsFromServer(searchTerm) {
+  try {
+    let url = `${config.serverURL}/jobs`;
+    if (searchTerm.length > 0) {
+      url += "?searchTerm=" + searchTerm;
+    }
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}

@@ -8,6 +8,7 @@ import {
 
 import SignIn from "./components/SignIn";
 import ApplicantProfile from "./components/ApplicantProfile";
+import JobListings from "./components/JobListings";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
 
         {/* Applicant Routes */}
         <Route path="/user/profile" element={<ApplicantProfile />} />
+        <Route path="/user/jobs" element={<JobListings />} />
       </Routes>
     </Router>
   );
