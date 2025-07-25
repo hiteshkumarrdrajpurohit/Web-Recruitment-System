@@ -9,6 +9,7 @@ import {
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ApplicantProfile from "./components/ApplicantProfile";
+import ApplicantDashboard from "./components/ApplicantDashboard";
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
 
         {/* Applicant Routes */}
         <Route path="/user/profile" element={<ApplicantProfile />} />
+        <Route path="/user/dashboard" element={<ApplicantDashboard />} />
+
+
       </Routes>
     </Router>
   );
