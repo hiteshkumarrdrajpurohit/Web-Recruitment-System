@@ -14,12 +14,13 @@ import JobListings from "./components/JobListings";
 import ApplicantDashboard from "./components/ApplicantDashboard";
 import Layout from "./components/Layout";
 import MyApplications from "./components/MyApplications";
+import Interviews from "./components/hr/Interviews";
 
 // Placeholder components for missing pages
 const Dashboard = () => <div>Hr DashBoard(HR)</div>;
 const Vacancies = () => <div>Vacancies Page (HR)</div>;
 const Applicants = () => <div>Applicants Page (HR)</div>;
-const Interviews = () => <div>Interviews Page (HR)</div>;
+//const Interviews = () => <div>Interviews Page (HR)</div>;
 const Hiring = () => <div>Hiring Page (HR)</div>;
 const Reports = () => <div>Reports Page (HR)</div>;
 const Settings = () => <div>Settings Page (HR)</div>;
