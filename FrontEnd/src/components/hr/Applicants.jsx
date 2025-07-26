@@ -4,7 +4,7 @@ import {
   UserCheck, UserX
 } from 'lucide-react';
 
-function Applicants() {
+function HRApplicants() {
   const [applicants, setApplicants] = useState([]);
   const [vacancies, setVacancies] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -247,4 +247,4 @@ function ApplicantDetailModal({ applicant, onClose, onUpdateStatus, vacancies })
 }
 
 
-export default Applicants;
+export default HRApplicants;
