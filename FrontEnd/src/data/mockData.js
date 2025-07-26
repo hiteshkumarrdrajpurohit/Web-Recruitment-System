@@ -257,3 +257,4 @@ export const mockHiringDecisions = [
     notes: 'Offer accepted. Start date confirmed.'
   }
 ];
+

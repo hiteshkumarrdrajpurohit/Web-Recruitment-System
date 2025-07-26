@@ -13,12 +13,12 @@ import ApplicantProfile from "./components/ApplicantProfile";
 import JobListings from "./components/JobListings";
 import ApplicantDashboard from "./components/ApplicantDashboard";
 import Layout from "./components/Layout";
-import MyApplications from "./components/MyApplications";
+import MyApplications from "./components/MyApplications"
+import { Vacancies } from "./components/Vacancies";
 import Interviews from "./components/hr/Interviews";
-
 // Placeholder components for missing pages
 const Dashboard = () => <div>Hr DashBoard(HR)</div>;
-const Vacancies = () => <div>Vacancies Page (HR)</div>;
+//const Vacancies = () => <div>Vacancies Page (HR)</div>;
 const Applicants = () => <div>Applicants Page (HR)</div>;
 //const Interviews = () => <div>Interviews Page (HR)</div>;
 const Hiring = () => <div>Hiring Page (HR)</div>;
@@ -35,7 +35,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         {/* Layout with nested routes for HR sidebar */}
         <Route path="/layout" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard/>} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="vacancies" element={<Vacancies />} />
           <Route path="applicants" element={<Applicants />} />
           <Route path="interviews" element={<Interviews />} />
