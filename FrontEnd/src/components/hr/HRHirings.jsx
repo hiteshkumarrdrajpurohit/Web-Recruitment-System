@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export function Hiring() {
+ function HRHirings() {
   const [applicants, setApplicants] = useState([]);
   const [vacancies, setVacancies] = useState([]);
   const [interviews, setInterviews] = useState([]);
@@ -134,3 +134,4 @@ export function Hiring() {
     </div>
   );
 }
+export default HRHirings;

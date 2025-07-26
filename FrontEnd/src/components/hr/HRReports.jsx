@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export function Reports() {
+ function HRReports() {
   const [vacancies, setVacancies] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [interviews, setInterviews] = useState([]);
@@ -235,3 +235,4 @@ function MetricCard({ title, value, subtitle, icon: Icon, trend }) {
     </div>
   );
 }
+export default HRReports;

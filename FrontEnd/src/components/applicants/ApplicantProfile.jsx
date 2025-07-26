@@ -34,6 +34,8 @@ export default function ApplicantProfile() {
     endDate: profile.endDate,
   });
 
+  const [editing, setEditing] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -51,10 +53,10 @@ export default function ApplicantProfile() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <Navbar profile={profile} />
+      
 
       {/* Profile Card */}
-      <div className="max-w-4xl mx-auto mt-10">
+      <div className="max-w-4xl mx-auto mt-2">
         <div className="bg-white rounded-xl shadow p-8 flex flex-col items-center">
           <div className="h-24 w-24 rounded-full bg-blue-200 flex items-center justify-center text-4xl font-bold text-blue-700 mb-4">
             {profile.firstName[0]}
