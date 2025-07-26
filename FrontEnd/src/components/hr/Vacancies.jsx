@@ -11,9 +11,9 @@ import {
   DollarSign,
   Eye,
 } from "lucide-react";
-import { mockVacancies } from "../data/mockData";
+import { mockVacancies } from "../../data/mockData";
 
-export function Vacancies() {
+ function Vacancies() {
   const [vacancies, setVacancies] = useState(mockVacancies);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -119,6 +119,9 @@ export function Vacancies() {
     </div>
   );
 }
+
+
+
 
 function VacancyCard({ vacancy, onEdit, onDelete }) {
   const getStatusColor = (status) => {
@@ -572,3 +575,4 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
     </div>
   );
 }
+export default Vacancies;

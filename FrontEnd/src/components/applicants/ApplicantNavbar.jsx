@@ -11,38 +11,44 @@ export default function Navbar({ applicant, profile }) {
         <div className="h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
           R
         </div>
-        <span className="font-bold text-lg">RecruitPro</span>
+        <span className="font-bold text-lg">HireHub</span>
       </div>
       <div className="flex gap-6 items-center">
         <Link
-          to="/applicant-dashboard"
+          to="/applicantlayout/user/dashboard"
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           Dashboard
         </Link>
         <Link
-          to="/jobs"
+          to="/applicantlayout/user/jobs"
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           Browse Jobs
         </Link>
         <Link
-          to="/my-applications"
+          to="/applicantlayout/user/applications"
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           My Applications
         </Link>
         <Link
-          to="/applicant-profile"
+          to="/applicantlayout/user/profile"
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           Profile
         </Link>
         <Link
-          to="/settings"
+          to="/applicantlayout/user/settings"
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           Settings
+        </Link>
+        <Link
+          to="/"
+          className="font-medium text-red-600 hover:text-red-800 ml-2"
+        >
+          Logout
         </Link>
         <div className="ml-4 flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center font-bold text-blue-700">

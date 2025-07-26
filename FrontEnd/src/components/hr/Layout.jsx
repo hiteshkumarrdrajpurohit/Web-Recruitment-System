@@ -15,7 +15,7 @@ import {
   UserCheck,
   BarChart3
 } from 'lucide-react';
-import { mockUser } from '../data/mockData.js';
+import { mockUser } from '../../data/mockData.js';
 
 const navigation = [
   { name: 'Dashboard', path: 'dashboard', icon: Home },
@@ -44,7 +44,7 @@ const Layout = ({ children }) => {
                 <Briefcase className="h-6 w-6 text-white" />
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">RecruitPro</h1>
+                <h1 className="text-xl font-bold text-gray-900">HireHub</h1>
                 <p className="text-xs text-gray-500">Recruitment System</p>
               </div>
             </div>
