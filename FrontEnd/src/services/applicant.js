@@ -94,3 +94,70 @@ export async function getAllJobsFromServer(searchTerm) {
     console.log(`exception: `, ex);
   }
 }
+const API_BASE_URL = "http://your-api-base-url.com/api";
+
+export const fetchVacancies = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/vacancies`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch vacancies");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching vacancies:", error);
+    throw error;
+  }
+};
+
+export const createVacancy = async (vacancyData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/vacancies`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(vacancyData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create vacancy");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating vacancy:", error);
+    throw error;
+  }
+};
+
+export const updateVacancy = async (id, vacancyData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(vacancyData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update vacancy");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating vacancy:", error);
+    throw error;
+  }
+};
+
+export const deleteVacancy = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete vacancy");
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting vacancy:", error);
+    throw error;
+  }
+};
