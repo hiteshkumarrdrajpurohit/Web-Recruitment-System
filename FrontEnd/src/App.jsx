@@ -16,14 +16,20 @@ import Layout from "./components/Layout";
 import MyApplications from "./components/MyApplications"
 import { Vacancies } from "./components/Vacancies";
 import Interviews from "./components/hr/Interviews";
+import HRDashboard from "./components/hr/HRDashboard";
+import HRApplicants from "./components/hr/HRApplicants";
+import Settings from "./components/hr/Settings";
+import { Hiring } from "./components/hr/HRHirings";
+import { Reports } from "./components/hr/HRReports";
 // Placeholder components for missing pages
-const Dashboard = () => <div>Hr DashBoard(HR)</div>;
+
+//const Dashboard = () => <div>Hr DashBoard(HR)</div>;
 //const Vacancies = () => <div>Vacancies Page (HR)</div>;
-const Applicants = () => <div>Applicants Page (HR)</div>;
+//const Applicants = () => <div>Applicants Page (HR)</div>;
 //const Interviews = () => <div>Interviews Page (HR)</div>;
-const Hiring = () => <div>Hiring Page (HR)</div>;
-const Reports = () => <div>Reports Page (HR)</div>;
-const Settings = () => <div>Settings Page (HR)</div>;
+//const Hiring = () => <div>Hiring Page (HR)</div>;
+//const Reports = () => <div>Reports Page (HR)</div>;
+//const Settings = () => <div>Settings Page (HR)</div>;
 const NotFound = () => <div>404 - Page Not Found</div>;
 
 function App() {
@@ -35,9 +41,9 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         {/* Layout with nested routes for HR sidebar */}
         <Route path="/layout" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<HRDashboard />} />
           <Route path="vacancies" element={<Vacancies />} />
-          <Route path="applicants" element={<Applicants />} />
+          <Route path="applicants" element={<HRApplicants />} />
           <Route path="interviews" element={<Interviews />} />
           <Route path="hiring" element={<Hiring />} />
           <Route path="reports" element={<Reports />} />
