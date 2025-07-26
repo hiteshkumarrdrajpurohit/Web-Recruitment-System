@@ -98,7 +98,7 @@ export default function ApplicantDashboard() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-lg">Recent Applications</h3>
               <Link
-                to="/my-applications"
+                 to="/applicantlayout/user/applications"
                 className="text-blue-600 text-sm hover:underline"
               >
                 View all
@@ -130,7 +130,7 @@ export default function ApplicantDashboard() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-lg">Featured Jobs</h3>
               <Link
-                to="/jobs"
+                to="/applicantlayout/user/jobs"
                 className="text-blue-600 text-sm hover:underline"
               >
                 View all
@@ -173,21 +173,21 @@ export default function ApplicantDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link
-            to="/jobs"
+             to="/applicantlayout/user/jobs"
             className="flex items-center gap-3 bg-white rounded-lg p-4 shadow hover:bg-blue-50"
           >
             <span className="bg-blue-100 p-2 rounded">🔍</span>
             <span className="font-medium">Browse Jobs</span>
           </Link>
           <Link
-            to="/applicant-profile"
+           to="/applicantlayout/user/settings"
             className="flex items-center gap-3 bg-white rounded-lg p-4 shadow hover:bg-green-50"
           >
             <span className="bg-green-100 p-2 rounded">👤</span>
             <span className="font-medium">Update Profile</span>
           </Link>
           <Link
-            to="/my-applications"
+           to="/applicantlayout/user/applications"
             className="flex items-center gap-3 bg-white rounded-lg p-4 shadow hover:bg-purple-50"
           >
             <span className="bg-purple-100 p-2 rounded">📄</span>
