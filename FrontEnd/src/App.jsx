@@ -44,8 +44,10 @@ function App() {
     <Router>
       <Routes>
         {/* Bypass login: redirect root to dashboard */}
-        <Route path="/" element={<Navigate to="/applicantlayout/user/dashboard" replace />} />
-        <Route path="/signup" element={<SignUp />} />
+       { <Route path="/" element={<Navigate to="/layout/dashboard" replace />} /> }
+
+        {/* <Route path="/" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} /> */}
 
         {/* Layout with nested routes for HR sidebar */}
         <Route path="/layout" element={<Layout />}>

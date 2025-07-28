@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Users,
@@ -37,6 +38,8 @@ function HRDashboard() {
   const [applicants, setApplicants] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
 useEffect(() => {
   const fetchAll = async () => {
@@ -176,7 +179,7 @@ useEffect(() => {
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div>
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -186,7 +189,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 w-full">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -208,11 +211,7 @@ useEffect(() => {
                     <dd className="flex items-baseline">
                       <div className="text-2xl font-bold text-gray-900">
                         {stat.value}
-                      </div>
-                      <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                        <TrendingUp className="self-center flex-shrink-0 h-4 w-4 text-green-500" />
-                        <span className="ml-1">{stat.change}</span>
-                      </div>
+                      </div>             
                     </dd>
                     <dd className="text-xs text-gray-500 mt-1">
                       {stat.description}
@@ -225,14 +224,16 @@ useEffect(() => {
         })}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div>
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
                 Recent Applicants
               </h3>
-              <button className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              <button className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              onClick={() => navigate('/layout/applicants')}
+              >
                 View all <ArrowRight className="h-4 w-4 inline ml-1" />
               </button>
             </div>
@@ -272,66 +273,40 @@ useEffect(() => {
             </div>
           </div>
         </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Urgent Tasks</h3>
-          </div>
-          <div className="p-6 space-y-3">
-            {urgentTasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+        <div>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Upcoming Interviews
+              </h3>
+              <button className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              onClick={() => navigate('/layout/interviews')}
               >
+                View all <ArrowRight className="h-4 w-4 inline ml-1" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {upcomingInterviews.map((interview) => (
                 <div
-                  className={`w-2 h-2 mt-2 rounded-full ${
-                    task.priority === 'high'
-                      ? 'bg-red-500'
-                      : task.priority === 'medium'
-                      ? 'bg-yellow-500'
-                      : 'bg-green-500'
-                  }`}
-                ></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{task.task}</p>
-                  <p className="text-xs text-gray-500">Due: {task.dueDate}</p>
+                  key={interview.id}
+                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <p className="text-sm font-semibold text-gray-900">
+                    {interview.applicantName}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {new Date(interview.scheduledDate).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Position: {interview.position}
+                  </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Upcoming Interviews
-            </h3>
-            <button className="text-sm font-medium text-blue-600 hover:text-blue-500">
-              View all <ArrowRight className="h-4 w-4 inline ml-1" />
-            </button>
-          </div>
-          <div className="p-6 space-y-4">
-            {upcomingInterviews.map((interview) => (
-              <div
-                key={interview.id}
-                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              >
-                <p className="text-sm font-semibold text-gray-900">
-                  {interview.applicantName}
-                </p>
-                <p className="text-xs text-gray-600">
-                  {new Date(interview.scheduledDate).toLocaleString()}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Position: {interview.position}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

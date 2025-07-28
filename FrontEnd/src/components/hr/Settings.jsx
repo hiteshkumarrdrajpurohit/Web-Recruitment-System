@@ -71,26 +71,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white border-b px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-lg">R</div>
-          <span className="font-bold text-lg">RecruitPro</span>
-        </div>
-        <div className="flex gap-6 items-center">
-          <Link to="/dashboard" className="font-medium text-gray-700 hover:text-blue-600">Dashboard</Link>
-          <Link to="/vacancies" className="font-medium text-gray-700 hover:text-blue-600">Vacancies</Link>
-          <Link to="/applicants" className="font-medium text-gray-700 hover:text-blue-600">Applicants</Link>
-          <Link to="/interviews" className="font-medium text-gray-700 hover:text-blue-600">Interviews</Link>
-          <Link to="/hiring" className="font-medium text-gray-700 hover:text-blue-600">Hiring</Link>
-          <Link to="/reports" className="font-medium text-gray-700 hover:text-blue-600">Reports</Link>
-          <Link to="/settings" className="font-medium text-blue-600 px-2 py-1 rounded bg-blue-50">Settings</Link>
-          <div className="ml-4 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center font-bold text-blue-700">H</div>
-            <span className="font-medium text-gray-700">{hrUser.name}</span>
-          </div>
-        </div>
-      </nav>
+      
 
       {/* Settings Content */}
       <div className="max-w-3xl mx-auto mt-10 bg-white rounded-xl shadow p-8">

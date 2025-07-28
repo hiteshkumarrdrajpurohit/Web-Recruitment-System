@@ -107,6 +107,7 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp, onSignIn }) {
           <button
             type="submit"
             className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow"
+            onClick={handleSignIn}
           >
             Sign In
           </button>
