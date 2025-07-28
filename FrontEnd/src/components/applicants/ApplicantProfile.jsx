@@ -1,30 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./ApplicantNavbar";
+import { mockApplicants, mockVacancies, mockInterviews, mockUser } from '../../data/mockData';
 
 export default function ApplicantProfile() {
-  // Profile state
-  const [profile, setProfile] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phoneNumber: "1234567890",
-    dateOfBirth: "1990-01-01",
-    skills: ["JavaScript", "React", "Node.js"],
-    houseNo: "123",
-    streetNo: "Main Street",
-    landmark: "Near Park",
-    area: "Downtown",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    country: "USA",
-    nameOfOrganization: "Tech Corp",
-    startDate: "2018-06-01",
-    endDate: "2022-12-31",
-    designation: "Senior Developer",
-    summary: "Experienced full-stack developer with 5+ years of experience",
-  });
+  // Use the first applicant as the default profile (or add logic to select by user)
+  const [profile, setProfile] = useState(mockApplicants[0]);
 
   const [form, setForm] = useState({
     ...profile,

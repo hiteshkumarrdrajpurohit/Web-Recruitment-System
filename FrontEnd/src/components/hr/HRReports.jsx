@@ -99,10 +99,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </button>
-          <button className="flex items-center px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </button>
+         
         </div>
       </div>
 
@@ -113,28 +110,22 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
           value={totalVacancies}
           subtitle={`${openVacancies} open`}
           icon={Briefcase}
-          trend="+10%"
+          
         />
         <MetricCard
           title="Total Applicants"
           value={totalApplicants}
           subtitle="All applications"
           icon={Users}
-          trend="+20%"
+        
         />
-        <MetricCard
-          title="Hiring Rate"
-          value={`${hiringRate}%`}
-          subtitle="Hired vs Total"
-          icon={TrendingUp}
-          trend="+5%"
-        />
+       
         <MetricCard
           title="Interview Conversion"
           value={`${interviewRate}%`}
           subtitle="Hires vs Interviews"
           icon={Calendar}
-          trend="+8%"
+        
         />
       </div>
 
@@ -220,7 +211,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
   );
 }
 
-function MetricCard({ title, value, subtitle, icon: Icon, trend }) {
+function MetricCard({ title, value, subtitle, icon: Icon}) {
   return (
     <div className="bg-white p-4 rounded-lg shadow flex items-start">
       <div className="p-2 bg-gray-100 rounded-full mr-4">
@@ -230,7 +221,7 @@ function MetricCard({ title, value, subtitle, icon: Icon, trend }) {
         <p className="text-sm text-gray-500">{title}</p>
         <h3 className="text-xl font-semibold text-gray-800">{value}</h3>
         <p className="text-sm text-gray-400">{subtitle}</p>
-        <span className="text-xs text-green-600">{trend}</span>
+      
       </div>
     </div>
   );

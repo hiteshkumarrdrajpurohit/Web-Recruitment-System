@@ -21,9 +21,11 @@ import { mockVacancies } from "../../data/mockData";
   const [selectedVacancy, setSelectedVacancy] = useState(null);
 
   const filteredVacancies = vacancies.filter((vacancy) => {
+    const title = vacancy.title ? vacancy.title.toLowerCase() : '';
+    const department = vacancy.department ? vacancy.department.toLowerCase() : '';
     const matchesSearch =
-      vacancy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vacancy.department.toLowerCase().includes(searchTerm.toLowerCase());
+      title.includes(searchTerm.toLowerCase()) ||
+      department.includes(searchTerm.toLowerCase());
     const matchesFilter =
       filterStatus === "All" || vacancy.status === filterStatus;
     return matchesSearch && matchesFilter;
@@ -176,11 +178,11 @@ function VacancyCard({ vacancy, onEdit, onDelete }) {
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="h-4 w-4 mr-2" />
-            Deadline: {new Date(vacancy.deadline).toLocaleDateString()}
+            Deadline: {vacancy.deadline ? new Date(vacancy.deadline).toLocaleDateString() : 'N/A'}
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <DollarSign className="h-4 w-4 mr-2" />$
-            {vacancy.salary.toLocaleString()}
+            {typeof vacancy.salary === 'number' ? vacancy.salary.toLocaleString() : ''}
           </div>
         </div>
 

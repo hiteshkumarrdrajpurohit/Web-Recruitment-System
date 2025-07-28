@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useAuth } from '../App';
 
 {/* dummy users */}
 const DUMMY_USERS = [
-  { id: 1, email: 'a@gmail.com', password: '123456', role: 'applicant' },
-  { id: 2, email: 'h@gmail.com', password: '123456', role: 'hr' },
+  { id: 1, name: 'Kunal', email: 'a@gmail.com', password: '123456', role: 'applicant' },
+  { id: 2, name: 'Hitesh', email: 'h@gmail.com', password: '123456', role: 'hr' },
 ];
 
-const DEMO_CREDENTIALS = [
-  { label: 'Job Seeker', email: 'a@gmail.com', password: '123456', role: 'applicant' },
-  { label: 'HR Manager', email: 'hr@company.com', password: 'hr123' },
-];
+
 
 const BG_IMG= "../";
-function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp, onSignIn }) {
+function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
 
   {/* state variables */}
   const [role, setRole] = useState('applicant');
@@ -27,7 +28,12 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp, onSignIn }) {
     const user = DUMMY_USERS.find(u => u.email === email && u.password === password && u.role === role);
     if (user) {
       setError('');
-      if (onSignIn) onSignIn(user.role);
+      setUser(user);
+      if (user.role === 'hr') {
+        navigate('/layout/dashboard');
+      } else if (user.role === 'applicant') {
+        navigate('/applicantlayout/user/dashboard');
+      }
     } else {
       setError('Invalid credentials');
     }
@@ -107,6 +113,7 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp, onSignIn }) {
           <button
             type="submit"
             className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow"
+            
           >
             Sign In
           </button>
@@ -126,9 +133,9 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp, onSignIn }) {
               <button
                 type="button"
                 className="text-sm text-blue-600 hover:underline"
-                onClick={onSwitchToForgetPassword}
+                onClick={() => navigate('/forgot-password')}
               >
-                Forget Your password?  <span className="font-semibold"> Cick here</span> 
+                Forget Your password?  <span className="font-semibold"> Click here</span> 
               </button>
             )}
           </div>

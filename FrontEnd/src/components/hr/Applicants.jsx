@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Search, Filter, Download, Eye,
-  UserCheck, UserX
-} from 'lucide-react';
+import { Search, Filter, Download, Eye, UserCheck, UserX } from 'lucide-react';
+import { mockApplicants, mockVacancies } from '../../data/mockData';
 
 function HRApplicants() {
   const [applicants, setApplicants] = useState([]);
@@ -12,44 +10,11 @@ function HRApplicants() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Dummy data
-  const dummyApplicants = [
-    {
-      id: 1,
-      firstName: 'Alice',
-      lastName: 'Johnson',
-      email: 'alice.johnson@example.com',
-      phone: '1234567890',
-      position: 'Frontend Developer',
-      experience: 3,
-      status: 'Applied',
-      appliedDate: '2025-07-20',
-      vacancyId: 101
-    },
-    {
-      id: 2,
-      firstName: 'Bob',
-      lastName: 'Smith',
-      email: 'bob.smith@example.com',
-      phone: '9876543210',
-      position: 'Backend Developer',
-      experience: 5,
-      status: 'Shortlisted',
-      appliedDate: '2025-07-18',
-      vacancyId: 102
-    }
-  ];
-
-  const dummyVacancies = [
-    { id: 101, title: 'Frontend Developer' },
-    { id: 102, title: 'Backend Developer' }
-  ];
-
   useEffect(() => {
     // Simulate loading
     setTimeout(() => {
-      setApplicants(dummyApplicants);
-      setVacancies(dummyVacancies);
+      setApplicants(mockApplicants);
+      setVacancies(mockVacancies);
       setLoading(false);
     }, 500); // Simulated delay
   }, []);
@@ -92,8 +57,8 @@ function HRApplicants() {
       </div>
 
       <div className="mt-6 bg-white shadow rounded-lg p-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
@@ -103,28 +68,22 @@ function HRApplicants() {
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
             />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2"
-          >
-            <option value="All">All Status</option>
-            <option value="Applied">Applied</option>
-            <option value="Reviewed">Reviewed</option>
-            <option value="Shortlisted">Shortlisted</option>
-            <option value="Interview Scheduled">Interview Scheduled</option>
-            <option value="Interviewed">Interviewed</option>
-            <option value="Hired">Hired</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-          <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <Filter className="h-4 w-4 mr-2" />
-            More Filters
-          </button>
-          <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </button>
+          <div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-auto"
+            >
+              <option value="All">All Status</option>
+              <option value="Applied">Applied</option>
+              <option value="Reviewed">Reviewed</option>
+              <option value="Shortlisted">Shortlisted</option>
+              <option value="Interview Scheduled">Interview Scheduled</option>
+              <option value="Interviewed">Interviewed</option>
+              <option value="Hired">Hired</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
         </div>
       </div>
 

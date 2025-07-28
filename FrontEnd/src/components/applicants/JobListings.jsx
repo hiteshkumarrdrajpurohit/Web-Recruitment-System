@@ -1,87 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
-// Indian-style mock applicants
-const mockApplicants = [
-  {
-    firstName: "Amit",
-    lastName: "Sharma",
-    email: "amit.sharma@example.com",
-    phone: "+91-9876543210",
-  },
-  {
-    firstName: "Priya",
-    lastName: "Patel",
-    email: "priya.patel@example.com",
-    phone: "+91-9123456780",
-  },
-];
-
-const applicant = mockApplicants[0];
-
-// Indian-style mock vacancies
-const mockVacancies = [
-  {
-    id: 1,
-    title: "Software Engineer",
-    department: "IT",
-    location: "Bangalore, Karnataka",
-    description: "Develop and maintain web applications for Indian clients.",
-    requirements: ["B.Tech/BE in CS/IT", "2+ years experience", "React.js", "Node.js"],
-    salary: { min: 600000, max: 1200000 },
-    postedDate: "2 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 2,
-    title: "Data Analyst",
-    department: "Analytics",
-    location: "Mumbai, Maharashtra",
-    description: "Analyze data trends for Indian retail sector.",
-    requirements: ["B.Sc/BA in Statistics", "Excel", "SQL", "Power BI"],
-    salary: { min: 400000, max: 900000 },
-    postedDate: "5 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 3,
-    title: "HR Executive",
-    department: "Human Resources",
-    location: "Delhi NCR",
-    description: "Manage recruitment and employee engagement for a leading Indian MNC.",
-    requirements: ["MBA in HR", "Good communication", "2+ years experience"],
-    salary: { min: 350000, max: 700000 },
-    postedDate: "1 week ago",
-    type: "Full-time",
-  },
-  {
-    id: 4,
-    title: "Sales Manager",
-    department: "Sales",
-    location: "Chennai, Tamil Nadu",
-    description: "Lead sales team for South India region.",
-    requirements: ["MBA/PGDM", "5+ years experience", "Team management"],
-    salary: { min: 800000, max: 1500000 },
-    postedDate: "3 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 5,
-    title: "Content Writer",
-    department: "Marketing",
-    location: "Remote (India)",
-    description: "Write blogs and articles for Indian startups.",
-    requirements: ["BA in English", "Excellent writing skills", "SEO knowledge"],
-    salary: { min: 250000, max: 500000 },
-    postedDate: "Today",
-    type: "Contract",
-  },
-];
+import { mockVacancies } from '../../data/mockData';
 
 export default function JobListings() {
   const [search, setSearch] = useState('');
-  // For demo, no filtering logic
-  const jobs = mockVacancies;
+  // Filter jobs based on search input (case-insensitive)
+  const jobs = mockVacancies.filter(job => {
+    const searchLower = search.toLowerCase();
+    const title = job.title ? job.title.toLowerCase() : '';
+    const department = job.department ? job.department.toLowerCase() : '';
+    const location = job.location ? job.location.toLowerCase() : '';
+    const description = job.description ? job.description.toLowerCase() : '';
+    return (
+      title.includes(searchLower) ||
+      department.includes(searchLower) ||
+      location.includes(searchLower) ||
+      description.includes(searchLower)
+    );
+  });
   const [appliedJobs, setAppliedJobs] = useState([]);
 
   const handleApply = (jobId) => {
@@ -110,7 +46,7 @@ export default function JobListings() {
       </div>
       {/* Job List */}
       <div className="max-w-6xl mx-auto px-2">
-        <div className="text-gray-500 text-sm mb-2">Showing {jobs.length} of {jobs.length} jobs</div>
+        <div className="text-gray-500 text-sm mb-2">Showing {jobs.length} of {mockVacancies.length} jobs</div>
         <div className="space-y-6">
           {jobs.map((job, idx) => (
             <div key={job.id || idx} className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between border">
