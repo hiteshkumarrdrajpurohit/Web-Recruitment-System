@@ -37,6 +37,21 @@ import ApplicantLayout from "./components/applicants/ApplicantLayout";
 //const Settings = () => <div>Settings Page (HR)</div>;
 const NotFound = () => <div>404 - Page Not Found</div>;
 
+function ForgotPassword() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded shadow max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-4 text-center">Forgot Password</h2>
+        <p className="mb-4 text-gray-600 text-center">Enter your email address and we'll send you instructions to reset your password.</p>
+        <form className="space-y-4">
+          <input type="email" className="w-full px-4 py-2 border rounded" placeholder="Enter your email" required />
+          <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">Send Reset Link</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // PrivateRoute component inside App.jsx
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -64,6 +79,8 @@ function App() {
         <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected HR routes */}
         <Route path="/layout" element={<PrivateRoute><Layout /></PrivateRoute>}>

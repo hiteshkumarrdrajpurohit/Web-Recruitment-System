@@ -133,9 +133,9 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
               <button
                 type="button"
                 className="text-sm text-blue-600 hover:underline"
-                onClick={onSwitchToForgetPassword}
+                onClick={() => navigate('/forgot-password')}
               >
-                Forget Your password?  <span className="font-semibold"> Cick here</span> 
+                Forget Your password?  <span className="font-semibold"> Click here</span> 
               </button>
             )}
           </div>

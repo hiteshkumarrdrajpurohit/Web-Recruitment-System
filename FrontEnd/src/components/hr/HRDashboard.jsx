@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import {
-  Users,
-  Briefcase,
-  Calendar,
-  TrendingUp,
-  Plus,
-  ArrowRight,
-  Target,
-} from 'lucide-react';
+import { Users, Briefcase, Calendar, TrendingUp, Plus, ArrowRight, Target } from 'lucide-react';
 import { useAuth } from '../../App';
-
-const API_ENDPOINTS = {
-  vacancies: '/api/vacancies',
-  applicants: '/api/applicants',
-  interviews: '/api/interviews',
-};
+import { mockApplicants, mockVacancies, mockInterviews } from '../../data/mockData';
 
 function StatusBadge({ status }) {
   let colorClass = 'bg-gray-300 text-gray-700';
@@ -35,73 +21,21 @@ function StatusBadge({ status }) {
 
 function HRDashboard() {
   const { user } = useAuth();
-
- const [vacancies, setVacancies] = useState([]);  // should be []
+  const [vacancies, setVacancies] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchAll = async () => {
-    try {
-      const mockVacancies = [
-        { id: 1, status: 'Open' },
-        { id: 2, status: 'Filled' }
-      ];
-
-      const mockApplicants = [
-        {
-          id: 1,
-          firstName: 'John',
-          lastName: 'Doe',
-          status: 'Active',
-          appliedDate: new Date().toISOString(),
-          experience: 3,
-          position: 'Frontend Developer',
-        },
-         {
-          id: 2,
-          firstName: 'samarth',
-          lastName: 'patil',
-          status: 'Active',
-          appliedDate: new Date().toISOString(),
-          experience: 1,
-          position: 'Backend Developer',
-        }
-      ];
-
-      const mockInterviews = [
-        {
-          id: 1,
-          applicantName: 'John Doe',
-          scheduledDate: new Date().toISOString(),
-          status: 'Scheduled',
-          position: 'Frontend Developer',
-        },
-        {
-          id: 2,
-          applicantName: 'samarth patil',
-          scheduledDate: new Date().toISOString(),
-          status: 'Scheduled',
-          position: 'Backend Developer',
-        }
-      ];
-
+  useEffect(() => {
+    // Simulate loading
+    setTimeout(() => {
       setVacancies(mockVacancies);
       setApplicants(mockApplicants);
       setInterviews(mockInterviews);
-    } catch (err) {
-      console.error('Mock fetch failed', err);
-    } finally {
       setLoading(false);
-    }
-  };
-
-  fetchAll();
-}, []);
-
+    }, 500);
+  }, []);
 
 
   if (loading) {

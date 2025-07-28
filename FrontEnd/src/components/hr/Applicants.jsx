@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Search, Filter, Download, Eye,
-  UserCheck, UserX
-} from 'lucide-react';
+import { Search, Filter, Download, Eye, UserCheck, UserX } from 'lucide-react';
+import { mockApplicants, mockVacancies } from '../../data/mockData';
 
 function HRApplicants() {
   const [applicants, setApplicants] = useState([]);
@@ -12,44 +10,11 @@ function HRApplicants() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Dummy data
-  const dummyApplicants = [
-    {
-      id: 1,
-      firstName: 'Alice',
-      lastName: 'Johnson',
-      email: 'alice.johnson@example.com',
-      phone: '1234567890',
-      position: 'Frontend Developer',
-      experience: 3,
-      status: 'Applied',
-      appliedDate: '2025-07-20',
-      vacancyId: 101
-    },
-    {
-      id: 2,
-      firstName: 'Bob',
-      lastName: 'Smith',
-      email: 'bob.smith@example.com',
-      phone: '9876543210',
-      position: 'Backend Developer',
-      experience: 5,
-      status: 'Shortlisted',
-      appliedDate: '2025-07-18',
-      vacancyId: 102
-    }
-  ];
-
-  const dummyVacancies = [
-    { id: 101, title: 'Frontend Developer' },
-    { id: 102, title: 'Backend Developer' }
-  ];
-
   useEffect(() => {
     // Simulate loading
     setTimeout(() => {
-      setApplicants(dummyApplicants);
-      setVacancies(dummyVacancies);
+      setApplicants(mockApplicants);
+      setVacancies(mockVacancies);
       setLoading(false);
     }, 500); // Simulated delay
   }, []);

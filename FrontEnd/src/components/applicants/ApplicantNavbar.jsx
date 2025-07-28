@@ -1,9 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from '../../App';
 
-export default function Navbar({ applicant, profile }) {
-  //whichever prop is passed , so it will assign in the user object
-  const user = applicant || profile || { firstName: "User", lastName: "" };
+export default function Navbar() {
+  const { user } = useAuth();
+  // Fallback for initials and name
+  const displayName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || 'U';
 
   return (
     <nav className="bg-white border-b px-6 py-3 flex items-center justify-between">
@@ -52,10 +57,10 @@ export default function Navbar({ applicant, profile }) {
         </Link>
         <div className="ml-4 flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center font-bold text-blue-700">
-            {user.firstName?.[0] || "U"}
+            {initials}
           </div>
           <span className="font-medium text-gray-700">
-            {user.firstName} {user.lastName}
+            {displayName}
           </span>
         </div>
       </div>
