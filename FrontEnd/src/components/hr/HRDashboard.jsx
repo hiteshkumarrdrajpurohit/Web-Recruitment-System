@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Target,
 } from 'lucide-react';
+import { useAuth } from '../../App';
 
 const API_ENDPOINTS = {
   vacancies: '/api/vacancies',
@@ -33,6 +34,7 @@ function StatusBadge({ status }) {
 }
 
 function HRDashboard() {
+  const { user } = useAuth();
 
  const [vacancies, setVacancies] = useState([]);  // should be []
   const [applicants, setApplicants] = useState([]);
@@ -187,6 +189,11 @@ useEffect(() => {
             Welcome back! Here's what's happening with your recruitment process.
           </p>
         </div>
+        {user && (
+          <div className="mt-4 sm:mt-0 text-right">
+            <span className="font-semibold text-blue-700 text-lg">{user.name}</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 w-full">

@@ -1,14 +1,12 @@
-import React, { useState, createContext } from "react";
+import React, { useState, createContext, useContext } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
-
 
 import Applicants from "./components/hr/Applicants";
 import HRDashboard from "./components/hr/HRDashboard";
@@ -39,43 +37,60 @@ import ApplicantLayout from "./components/applicants/ApplicantLayout";
 //const Settings = () => <div>Settings Page (HR)</div>;
 const NotFound = () => <div>404 - Page Not Found</div>;
 
+// PrivateRoute component inside App.jsx
+function PrivateRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+export const AuthContext = createContext();
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
 function App() {
+  const [user, setUser] = useState(null);
+
   return (
+
+    <AuthContext.Provider value={{ user, setUser }}>
     <Router>
       <Routes>
-        {/* Bypass login: redirect root to dashboard */}
-       { <Route path="/" element={<Navigate to="/layout/dashboard" replace />} /> }
+        {/* Public routes */}
+        <Route path="/" element={<SignIn />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
 
-        {/* <Route path="/" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} /> */}
-
-        {/* Layout with nested routes for HR sidebar */}
-        <Route path="/layout" element={<Layout />}>
-          
-          <Route path="dashboard" element={<HRDashboard />} />
-          <Route path="vacancies" element={<Vacancies />} />
-          <Route path="applicants" element={<Applicants />} />
-          <Route path="interviews" element={<Interviews />} />
-          <Route path="hiring" element={<HRHirings />} />
-          <Route path="reports" element={<HRReports />} />
-          <Route path="settings" element={<Settings />} />
-          
+        {/* Protected HR routes */}
+        <Route path="/layout" element={<PrivateRoute><Layout /></PrivateRoute>}>
+          <Route path="dashboard" element={<PrivateRoute><HRDashboard /></PrivateRoute>} />
+          <Route path="vacancies" element={<PrivateRoute><Vacancies /></PrivateRoute>} />
+          <Route path="applicants" element={<PrivateRoute><Applicants /></PrivateRoute>} />
+          <Route path="interviews" element={<PrivateRoute><Interviews /></PrivateRoute>} />
+          <Route path="hiring" element={<PrivateRoute><HRHirings /></PrivateRoute>} />
+          <Route path="reports" element={<PrivateRoute><HRReports /></PrivateRoute>} />
+          <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         </Route>
 
-
-        {/* Applicant Routes */}
-
-        <Route path="/applicantlayout" element={<ApplicantLayout />}>
-          <Route path="user/profile" element={<ApplicantProfile />} />
-          { <Route path="user/jobs" element={<JobListings />} /> }
-          <Route path="user/dashboard" element={<ApplicantDashboard />} />
-          <Route path="user/applications" element={<MyApplications />} />
-          <Route path="user/settings" element={<ApplicantSettings />} />
+        {/* Protected Applicant routes */}
+        <Route path="/applicantlayout" element={<PrivateRoute><ApplicantLayout /></PrivateRoute>}>
+          <Route path="user/profile" element={<PrivateRoute><ApplicantProfile /></PrivateRoute>} />
+          { <Route path="user/jobs" element={<PrivateRoute><JobListings /></PrivateRoute>} /> }
+          <Route path="user/dashboard" element={<PrivateRoute><ApplicantDashboard /></PrivateRoute>} />
+          <Route path="user/applications" element={<PrivateRoute><MyApplications /></PrivateRoute>} />
+          <Route path="user/settings" element={<PrivateRoute><ApplicantSettings /></PrivateRoute>} />
         </Route>
+
         {/* 404 Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
+
+   </AuthContext.Provider>
   );
 }
 

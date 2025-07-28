@@ -16,6 +16,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { mockUser } from '../../data/mockData.js';
+import { useAuth } from '../../App';
 
 const navigation = [
   { name: 'Dashboard', path: 'dashboard', icon: Home },
@@ -32,6 +33,7 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { setUser } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden bg-gray-50">
@@ -97,7 +99,13 @@ const Layout = ({ children }) => {
             <div className="flex items-center space-x-2 min-w-0">
              
               <div className="flex flex-row items-center gap-1 min-w-0">
-                <span className="font-medium text-gray-900">{mockUser.name}</span>
+               
+                <button
+                  onClick={() => { setUser(null); navigate('/'); }}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-semibold"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           </div>

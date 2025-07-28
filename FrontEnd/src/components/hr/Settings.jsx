@@ -74,7 +74,7 @@ export default function Settings() {
       
 
       {/* Settings Content */}
-      <div className="max-w-3xl mx-auto mt-10 bg-white rounded-xl shadow p-8">
+      <div className="max-w-3xl mx-auto mt-0 bg-white rounded-xl shadow p-8">
         <h2 className="text-2xl font-bold mb-6">Admin Settings</h2>
 
         {/* Applicant Management */}
