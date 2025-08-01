@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { mockVacancies } from "../../data/mockData";
 import VacancyCard from "./VacancyCard";
-
+import CreateVacancyModal from "./CreateVacancy";
 
 function Vacancies() {
   const [vacancies, setVacancies] = useState(mockVacancies);
@@ -14,7 +14,9 @@ function Vacancies() {
 
   const filteredVacancies = vacancies.filter((vacancy) => {
     const title = vacancy.title ? vacancy.title.toLowerCase() : "";
-    const department = vacancy.department ? vacancy.department.toLowerCase() : "";
+    const department = vacancy.department
+      ? vacancy.department.toLowerCase()
+      : "";
     const matchesSearch =
       title.includes(searchTerm.toLowerCase()) ||
       department.includes(searchTerm.toLowerCase());
@@ -83,6 +85,20 @@ function Vacancies() {
           />
         ))}
       </div>
+
+      {/* Create Vacancy Modal */}
+      {showCreateModal && (
+        <CreateVacancyModal
+          onClose={() => setShowCreateModal(false)}
+          onSave={(vacancy) => {
+            setVacancies([
+              ...vacancies,
+              { ...vacancy, id: Date.now().toString() },
+            ]);
+            setShowCreateModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
