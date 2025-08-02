@@ -1,21 +1,23 @@
 
 import React, { useState } from "react";
 
-function CreateVacancyModal({ onClose, onSave }) {
+function EditVacancyModal({ vacancy, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    title: "",
-    department: "",
-    location: "",
-    type: "Full-time",
-    description: "",
-    responsibilities: "",
-    salary: "",
-    deadline: "",
+    title: vacancy.title,
+    department: vacancy.department,
+    location: vacancy.location,
+    type: vacancy.type,
+    description: vacancy.description,
+    responsibilities: vacancy.responsibilities.join("\n"),
+    salary: vacancy.salary.toString(),
+    deadline: vacancy.deadline,
+    status: vacancy.status,
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const vacancy = {
+    const updatedVacancy = {
+      ...vacancy,
       title: formData.title,
       department: formData.department,
       location: formData.location,
@@ -25,13 +27,10 @@ function CreateVacancyModal({ onClose, onSave }) {
         .split("\n")
         .filter((r) => r.trim()),
       salary: parseInt(formData.salary),
-      status: "Open",
-      postedDate: new Date().toISOString().split("T")[0],
       deadline: formData.deadline,
-      applicantCount: 0,
-      createdBy: "HR001",
+      status: formData.status,
     };
-    onSave(vacancy);
+    onSave(updatedVacancy);
   };
 
   return (
@@ -39,10 +38,10 @@ function CreateVacancyModal({ onClose, onSave }) {
       <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
         <div className="mt-3">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Create New Vacancy
+            Edit Vacancy
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Job Title & Department */}
+            {/* Title & Status */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -60,6 +59,26 @@ function CreateVacancyModal({ onClose, onSave }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Open">Open</option>
+                  <option value="Closed">Closed</option>
+                  <option value="On Hold">On Hold</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Department & Location */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
                   Department
                 </label>
                 <input
@@ -72,10 +91,6 @@ function CreateVacancyModal({ onClose, onSave }) {
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-            </div>
-
-            {/* Location & Type */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Location
@@ -89,23 +104,6 @@ function CreateVacancyModal({ onClose, onSave }) {
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Employment Type
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Internship">Internship</option>
-                </select>
               </div>
             </div>
 
@@ -138,7 +136,6 @@ function CreateVacancyModal({ onClose, onSave }) {
                   setFormData({ ...formData, responsibilities: e.target.value })
                 }
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Manage team projects\nDevelop new features\nCollaborate with stakeholders"
               />
             </div>
 
@@ -187,7 +184,7 @@ function CreateVacancyModal({ onClose, onSave }) {
                 type="submit"
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
               >
-                Create Vacancy
+                Save Changes
               </button>
             </div>
           </form>
@@ -197,4 +194,4 @@ function CreateVacancyModal({ onClose, onSave }) {
   );
 }
 
-export default CreateVacancyModal;
+export default EditVacancyModal;
