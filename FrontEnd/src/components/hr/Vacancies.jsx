@@ -1,9 +1,10 @@
-// src/pages/Vacancies.jsx
+
 import React, { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { mockVacancies } from "../../data/mockData";
 import VacancyCard from "./VacancyCard";
 import CreateVacancyModal from "./CreateVacancy";
+import EditVacancyModal from "./EditVacancy";
 
 function Vacancies() {
   const [vacancies, setVacancies] = useState(mockVacancies);
@@ -96,6 +97,20 @@ function Vacancies() {
               { ...vacancy, id: Date.now().toString() },
             ]);
             setShowCreateModal(false);
+          }}
+        />
+      )}
+      {selectedVacancy && (
+        <EditVacancyModal
+          vacancy={selectedVacancy}
+          onClose={() => setSelectedVacancy(null)}
+          onSave={(updatedVacancy) => {
+            setVacancies(
+              vacancies.map((v) =>
+                v.id === updatedVacancy.id ? updatedVacancy : v
+              )
+            );
+            setSelectedVacancy(null);
           }}
         />
       )}
