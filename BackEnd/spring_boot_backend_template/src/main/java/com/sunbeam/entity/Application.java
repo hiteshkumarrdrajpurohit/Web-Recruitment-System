@@ -1,0 +1,56 @@
+package com.sunbeam.entity;
+
+
+
+import com.sunbeam.entity.types.ApplicationStatus;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Entity
+@Table(name = "applications")
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(callSuper = true)
+@EqualsAndHashCode(of="",callSuper = false)
+public class Application  extends BaseEntity{
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vacancy_id", nullable = false)
+    private Vacancy vacancy;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+    
+   @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interview_id", nullable = false)
+    private Interview interview;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApplicationStatus status; // SUBMITTED, UNDER_REVIEW, SHORTLISTED, INTERVIEWED, REJECTED, SELECTED
+    @Column(columnDefinition = "TEXT")
+    private String coverLetter;
+    
+    @Column
+    private String resumeFileName;
+    
+    @Column
+    private String resumeFilePath;
+    
+   
+}
