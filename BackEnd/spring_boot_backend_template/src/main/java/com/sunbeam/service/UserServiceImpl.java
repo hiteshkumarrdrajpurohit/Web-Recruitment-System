@@ -56,10 +56,23 @@ public class UserServiceImpl implements UserService {
 		return modelMapper.map(entity, UserDTO.class);
 	}
 
+	@Override
 	public ApiResponse updateUser(Long id, UpdateUserDTO dto) {
 		User entity =userDao.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Invalid USer ID!!!!"));
-		entity.setAddress();
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid User ID!!!!"));
+		entity.setPhoneNumber(dto.getPhoneNumber());
+		entity.setAddress(dto.getAddress());
+		entity.setCity(dto.getCity());
+		entity.setState(dto.getState());
+		entity.setZipCode(dto.getZipCode());
+		entity.setZipCode(dto.getZipCode());
+		entity.setCountry(dto.getCountry());
+		entity.setSkills(dto.getSkills());
+		entity.setOrgName(dto.getOrgName());
+		entity.setStartDate(dto.getStartDate());
+		entity.setEndDate(dto.getEndDate());
+		entity.setDesignation(dto.getDesignation());
+		entity.setSummary(dto.getSummary());
 		modelMapper.map(dto, entity);
 		
 		return new ApiResponse("Updated User details ....");

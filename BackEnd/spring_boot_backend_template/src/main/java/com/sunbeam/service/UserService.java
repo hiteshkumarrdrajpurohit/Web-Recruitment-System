@@ -8,13 +8,7 @@ import com.sunbeam.dto.UserDTO;
 
 public interface UserService {
 
-	//sign in
-	
-	
-	
-
 	UserDTO signIn(SignInDTO dto);
-
 	UserDTO signUp(SignUpDTO dto);
 	ApiResponse updateUser(Long id,UpdateUserDTO dto);
 }
