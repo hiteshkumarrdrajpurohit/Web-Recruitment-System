@@ -48,7 +48,7 @@ public class User  extends BaseEntity {
     @Column(nullable = false)
     private UserRole role;    // ADMIN, HR_MANAGER, RECRUITER, CANDIDATE
     
-    @Column(nullable = false)
+    @Column
     private String skills;
 
     @Column(nullable = false)

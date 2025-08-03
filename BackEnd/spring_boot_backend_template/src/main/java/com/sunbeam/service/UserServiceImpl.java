@@ -6,9 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sunbeam.custom_exceptions.AuthenticationFailureException;
 import com.sunbeam.custom_exceptions.InvalidInputException;
+import com.sunbeam.custom_exceptions.ResourceNotFoundException;
 import com.sunbeam.dao.UserDao;
+import com.sunbeam.dto.ApiResponse;
 import com.sunbeam.dto.SignInDTO;
 import com.sunbeam.dto.SignUpDTO;
+import com.sunbeam.dto.UpdateUserDTO;
 import com.sunbeam.dto.UserDTO;
 import com.sunbeam.entity.User;
 
@@ -49,12 +52,17 @@ public class UserServiceImpl implements UserService {
 		
 		User entity = userDao.save(modelMapper.map(dto, User.class));
 		
-	
+	    
 		return modelMapper.map(entity, UserDTO.class);
 	}
-	
 
-	
-
-	
+	public ApiResponse updateUser(Long id, UpdateUserDTO dto) {
+		User entity =userDao.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid USer ID!!!!"));
+		entity.setAddress();
+		modelMapper.map(dto, entity);
+		
+		return new ApiResponse("Updated User details ....");
+		
+	}	
 }

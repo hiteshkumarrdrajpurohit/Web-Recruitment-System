@@ -33,9 +33,9 @@ public class GlobalExceptionHandler {
 					.body(new ApiResponse(e.getMessage()));		
 		}
 		//add exception handling method - to handle bad request - invalid input
-				@ExceptionHandler(InvalidInputException.class)
-				public ResponseEntity<?> 
-				handleInvalidInputException(InvalidInputException e)
+		@ExceptionHandler(InvalidInputException.class)
+	    public ResponseEntity<?> 
+		handleInvalidInputException(InvalidInputException e)
 				{
 					System.out.println("in catch -invalid input exc");
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST)//SC 400
