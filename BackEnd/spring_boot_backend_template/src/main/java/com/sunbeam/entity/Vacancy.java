@@ -77,5 +77,4 @@ public class Vacancy  extends BaseEntity {
     @JoinColumn(name = "created_by", nullable = false)
     private HrManager hrManager; 
 
-
 }

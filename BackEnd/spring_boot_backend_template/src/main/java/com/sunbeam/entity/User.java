@@ -22,15 +22,13 @@ import lombok.ToString;
 
 @Entity
 @Table(name="users")
-
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString(callSuper = true)
 
 public class User  extends BaseEntity {
-   
-    
+       
     @Column(unique = true, nullable = false)
     private String email;
     
@@ -56,37 +54,32 @@ public class User  extends BaseEntity {
     @Column(nullable = false)
     private LocalDate dateOfBirth;
     
-    @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
     private  String city;
-
-    @Column(nullable = false)
+    
     private String State;
 
-    @Column(nullable = false)
     private String Country;
-    
-    @Column(nullable = false)
+     
     private Long ZipCode;
 
-    @Column(nullable = false)
+   
     private String orgName;
 
-    @Column(nullable = false)
+   
     private String Designation;
 
-   @Column(nullable = false)
+  
     private LocalDate startDate;
   
-   @Column(nullable = false)
+   
     private LocalDate endDate;
 
-    @Column(nullable = false)
+   
     private String summary;
 
-    @Column(nullable = false)
+    
     private Boolean isActive = true;
 
    @OneToMany(mappedBy = "user", 
@@ -94,10 +87,7 @@ public class User  extends BaseEntity {
 
    private List<Application> ApplicationList = new ArrayList<>();
 
-   @OneToMany(mappedBy = "user", 
-			cascade = CascadeType.ALL, orphanRemoval = true)
-
-   private List<Interview> interviewList = new ArrayList<>();
+  
 
    @OneToOne(mappedBy = "user", 
 			cascade = CascadeType.ALL, orphanRemoval = true)

@@ -26,9 +26,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 
 public class Hirings extends BaseEntity {
-
-   
-    
+	
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id", nullable = false)
     private Application application;
