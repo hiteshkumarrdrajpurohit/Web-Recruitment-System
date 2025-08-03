@@ -25,7 +25,7 @@ public class HrManager extends BaseEntity{
 @Column(name="dept_name",nullable=false)
 private String departmentName;
 
-@OneToOne()
+@OneToOne
 @JoinColumn( name= "user_id", nullable=false)
 private User user;
 

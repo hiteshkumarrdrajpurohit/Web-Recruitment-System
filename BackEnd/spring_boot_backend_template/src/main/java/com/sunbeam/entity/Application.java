@@ -2,8 +2,12 @@ package com.sunbeam.entity;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sunbeam.entity.types.ApplicationStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
@@ -25,7 +30,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(callSuper = true)
-@EqualsAndHashCode(of="",callSuper = false)
+
 public class Application  extends BaseEntity{
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,5 +57,9 @@ public class Application  extends BaseEntity{
     @Column
     private String resumeFilePath;
     
-   
+    @OneToMany(mappedBy = "application", 
+			cascade = CascadeType.ALL, orphanRemoval = true)
+
+   private List<Interview> interviewList = new ArrayList<>();
+    
 }
