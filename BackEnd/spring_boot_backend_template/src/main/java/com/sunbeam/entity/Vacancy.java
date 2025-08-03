@@ -43,10 +43,10 @@ public class Vacancy  extends BaseEntity {
     private JobType employementType; // FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP
     
     @Column(nullable = false)
-    private Long salaryMin;
+    private Long minSalary;
     
     @Column(nullable = false)
-    private Long salaryMax;
+    private Long maxSalary;
     
     @Column(columnDefinition = "TEXT")
     private String jobDescription;
@@ -68,11 +68,11 @@ public class Vacancy  extends BaseEntity {
     private String requiredExperience;
 
     @Column(nullable = false)
-    private Long numberOfVacencies;
+    private Long numberOfVacancies;
    
     @Column(nullable = false)
-    private String shift_details;
- 
+    private String shiftDetails;
+                                        
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private HrManager hrManager; 
