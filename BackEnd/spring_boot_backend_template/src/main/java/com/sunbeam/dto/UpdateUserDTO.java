@@ -1,22 +1,14 @@
 package com.sunbeam.dto;
 
 import java.time.LocalDate;
+import lombok.Getter;
+import lombok.Setter;
 
 public class UpdateUserDTO {
 	@Getter
 	@Setter
-
-	private String email;
-    
-    private String password;
-    
-    private String firstName;
-    
-    private String lastName;
-    
-    private String phoneNumber;
-     
-    private LocalDate dateOfBirth;
+   
+    private String skills;
     
     private String address;
 
@@ -24,9 +16,9 @@ public class UpdateUserDTO {
 	    
 	private String State;
  
-	private String Country;
-	     
 	private Long ZipCode;
+	
+	private String Country;
 
     private String orgName;
 
