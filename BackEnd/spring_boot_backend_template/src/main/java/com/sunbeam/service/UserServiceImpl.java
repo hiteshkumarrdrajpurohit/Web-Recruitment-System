@@ -1,5 +1,7 @@
 package com.sunbeam.service;
 
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import com.sunbeam.dto.SignInDTO;
 import com.sunbeam.dto.SignUpDTO;
 import com.sunbeam.dto.UpdateUserDTO;
 import com.sunbeam.dto.UserDTO;
+import com.sunbeam.dto.VacancyDTO;
 import com.sunbeam.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -76,5 +79,6 @@ public class UserServiceImpl implements UserService {
 		modelMapper.map(dto, entity);
 		
 		return new ApiResponse("Updated User details ....");
-	}	
+	}
+
 }
