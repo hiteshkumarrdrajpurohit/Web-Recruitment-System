@@ -1,10 +1,12 @@
 package com.sunbeam.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.sunbeam.entity.User;
+import com.sunbeam.entity.Vacancy;
 
 public interface UserDao extends JpaRepository<User, Long> {
 
@@ -15,5 +17,7 @@ public interface UserDao extends JpaRepository<User, Long> {
 	boolean existsByEmail(String em);
 
 	Optional<User> findByEmailAndPassword(String email, String password);
+	
+	
 	
 }
