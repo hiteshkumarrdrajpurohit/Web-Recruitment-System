@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-	
 	private final UserDao userDao;
 	
 	private final ModelMapper modelMapper;
@@ -58,6 +57,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ApiResponse updateUser(Long id, UpdateUserDTO dto) {
+		//get the user by ID
 		User entity =userDao.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Invalid User ID!!!!"));
 		entity.setPhoneNumber(dto.getPhoneNumber());
@@ -76,6 +76,5 @@ public class UserServiceImpl implements UserService {
 		modelMapper.map(dto, entity);
 		
 		return new ApiResponse("Updated User details ....");
-		
 	}	
 }
