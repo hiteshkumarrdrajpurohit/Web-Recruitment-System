@@ -27,4 +27,11 @@ public class VacancyServiceImpl implements VacancyService{
 				.map(entity -> modelMapper.map(entity, VacancyDTO.class)) // Stream<DTO>
 				.toList();
 	}
+	   @Override
+	    public List<VacancyDTO> searchVacancies(String keyword) {
+	        return vacancydao.searchByKeyword(keyword)
+	                .stream()
+	                .map(entity -> modelMapper.map(entity, VacancyDTO.class))
+	                .toList();
+	    }
 }

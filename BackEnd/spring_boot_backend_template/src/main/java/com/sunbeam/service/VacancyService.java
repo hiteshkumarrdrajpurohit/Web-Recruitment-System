@@ -9,4 +9,5 @@ public interface VacancyService {
 	
 	
 	List<VacancyDTO> getAllAvailableVacancies();
+	List<VacancyDTO> searchVacancies(String keyword);
 }
