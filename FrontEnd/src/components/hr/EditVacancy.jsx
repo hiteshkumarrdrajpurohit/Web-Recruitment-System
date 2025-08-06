@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 
 function EditVacancyModal({ vacancy, onClose, onSave }) {
@@ -8,8 +7,9 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
     location: vacancy.location,
     type: vacancy.type,
     description: vacancy.description,
-    responsibilities: vacancy.responsibilities.join("\n"),
-    salary: vacancy.salary.toString(),
+    responsibilities: (vacancy.responsibilities || []).join("\n"),
+    minSalary: vacancy.minSalary?.toString() || "",
+    maxSalary: vacancy.maxSalary?.toString() || "",
     deadline: vacancy.deadline,
     status: vacancy.status,
   });
@@ -26,7 +26,8 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
       responsibilities: formData.responsibilities
         .split("\n")
         .filter((r) => r.trim()),
-      salary: parseInt(formData.salary),
+      minSalary: parseInt(formData.minSalary),
+      maxSalary: parseInt(formData.maxSalary),
       deadline: formData.deadline,
       status: formData.status,
     };
@@ -139,36 +140,52 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
               />
             </div>
 
-            {/* Salary & Deadline */}
+            {/* Min Salary & Max Salary */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Offered Salary ($)
+                  Minimum Salary ($)
                 </label>
                 <input
                   type="number"
                   required
-                  value={formData.salary}
+                  value={formData.minSalary}
                   onChange={(e) =>
-                    setFormData({ ...formData, salary: e.target.value })
+                    setFormData({ ...formData, minSalary: e.target.value })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Application Deadline
+                  Maximum Salary ($)
                 </label>
                 <input
-                  type="date"
+                  type="number"
                   required
-                  value={formData.deadline}
+                  value={formData.maxSalary}
                   onChange={(e) =>
-                    setFormData({ ...formData, deadline: e.target.value })
+                    setFormData({ ...formData, maxSalary: e.target.value })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+            </div>
+
+            {/* Deadline */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Application Deadline
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.deadline}
+                onChange={(e) =>
+                  setFormData({ ...formData, deadline: e.target.value })
+                }
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
 
             {/* Buttons */}
