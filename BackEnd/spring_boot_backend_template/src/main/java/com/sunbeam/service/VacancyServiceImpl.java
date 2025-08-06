@@ -6,10 +6,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sunbeam.custom_exceptions.ResourceNotFoundException;
 import com.sunbeam.dao.UserDao;
 import com.sunbeam.dao.VacancyDao;
+import com.sunbeam.dto.ApiResponse;
 import com.sunbeam.dto.VacancyDTO;
 import com.sunbeam.dto.VacancyHRDTO;
+import com.sunbeam.entity.Vacancy;
 import com.sunbeam.entity.types.JobStatus;
 import lombok.AllArgsConstructor;
 
@@ -43,5 +46,15 @@ public class VacancyServiceImpl implements VacancyService{
 	                .map(entity -> modelMapper.map(entity, VacancyDTO.class))
 	                .toList();
 	    }
+
+	   @Override
+		public ApiResponse updateVacancy(Long id, VacancyHRDTO dto) {
+			Vacancy entity = vacancydao.findById(id)
+					.orElseThrow(() -> new ResourceNotFoundException("Invalid restaurant ID!!!!"));
+
+			modelMapper.map(dto, entity);
+			return new ApiResponse("Updated Vacancy details ....");
+		}
+
 
 }
