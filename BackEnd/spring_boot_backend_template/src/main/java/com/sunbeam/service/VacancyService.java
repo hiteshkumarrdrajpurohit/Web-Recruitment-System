@@ -10,5 +10,9 @@ public interface VacancyService {
 	
 	
 	List<VacancyDTO> getAllAvailableVacancies();
+
 	List<VacancyHRDTO> getAllAvailableVacanciesForHr();
- }
+
+	List<VacancyDTO> searchVacancies(String keyword);
+}
+
