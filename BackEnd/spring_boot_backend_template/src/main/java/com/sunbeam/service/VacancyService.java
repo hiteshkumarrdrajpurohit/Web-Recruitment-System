@@ -18,6 +18,6 @@ public interface VacancyService {
 	
 	ApiResponse updateVacancy(Long id,VacancyHRDTO dto);
 	
-
+	ApiResponse deleteVacancy(Long id);
 }
 
