@@ -22,11 +22,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor	
 public class VacancyServiceImpl implements VacancyService{
 	
-	private VacancyDao vacancydao;
+	private VacancyDao vacancyDao;
 	private final ModelMapper modelMapper;
 	@Override
 	public List<VacancyDTO> getAllAvailableVacancies() {
-		return vacancydao.findByStatus(JobStatus.ACTIVE)// List<Entity>
+		return vacancyDao.findByStatus(JobStatus.ACTIVE)// List<Entity>
 				.stream() // Stream<Entity>
 				.map(entity -> modelMapper.map(entity, VacancyDTO.class)) // Stream<DTO>
 				.toList();
@@ -34,14 +34,14 @@ public class VacancyServiceImpl implements VacancyService{
 
 	@Override
 	public List<VacancyHRDTO> getAllAvailableVacanciesForHr() {
-		return vacancydao.findByStatus(JobStatus.ACTIVE)// List<Entity>
+		return vacancyDao.findByStatus(JobStatus.ACTIVE)// List<Entity>
 				.stream() // Stream<Entity>
 				.map(entity -> modelMapper.map(entity, VacancyHRDTO.class)) // Stream<DTO>
 				.toList();
 	}
 	   @Override
 	    public List<VacancyDTO> searchVacancies(String keyword) {
-	        return vacancydao.searchByKeyword(keyword)
+	        return vacancyDao.searchByKeyword(keyword)
 	                .stream()
 	                .map(entity -> modelMapper.map(entity, VacancyDTO.class))
 	                .toList();
@@ -49,12 +49,11 @@ public class VacancyServiceImpl implements VacancyService{
 
 	   @Override
 		public ApiResponse updateVacancy(Long id, VacancyHRDTO dto) {
-			Vacancy entity = vacancydao.findById(id)
+			Vacancy entity = vacancyDao.findById(id)
 					.orElseThrow(() -> new ResourceNotFoundException("Invalid restaurant ID!!!!"));
 
 			modelMapper.map(dto, entity);
 			return new ApiResponse("Updated Vacancy details ....");
 		}
-
 
 }

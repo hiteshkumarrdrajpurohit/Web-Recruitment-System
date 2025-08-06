@@ -16,12 +16,6 @@ public interface UserService {
 	// Register
 	UserDTO signUp(SignUpDTO dto);
 
-
-	ApiResponse updateUser(Long id,UpdateUserDTO dto);
-	
-}
-
-
 	// Update profile
 	ApiResponse updateUser(Long id, UpdateUserDTO dto);
 
@@ -31,7 +25,6 @@ public interface UserService {
 	// Optional: Delete user (useful for settings page)
 	ApiResponse deleteUser(Long id);
 	
-
 
 	ApiResponse changePassword(Long userId, String oldPassword, String newPassword);
 
