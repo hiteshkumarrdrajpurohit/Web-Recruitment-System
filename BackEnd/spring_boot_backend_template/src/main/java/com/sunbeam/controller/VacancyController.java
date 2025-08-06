@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sunbeam.dto.VacancyDTO;
+import com.sunbeam.dto.VacancyHRDTO;
 import com.sunbeam.service.UserService;
 import com.sunbeam.service.VacancyService;
 import com.sunbeam.service.VacancyServiceImpl;
@@ -22,15 +23,27 @@ import lombok.AllArgsConstructor;
 public class VacancyController {
 	private final VacancyService vacancyService;
 	@GetMapping
-	public ResponseEntity<?> getAllAvailableRestaurants() {
+	public ResponseEntity<?> getAllAvailableVacancies() {
 		System.out.println("in get all");
-		List<VacancyDTO> restaurants = 
+		List<VacancyDTO> vacancies = 
 				vacancyService.getAllAvailableVacancies();
-		if (restaurants.isEmpty())
+		if (vacancies.isEmpty())
 			return ResponseEntity.status(HttpStatus.NO_CONTENT)// 204
 					.build();
 		//  non empty list
-		return ResponseEntity.ok(restaurants);// SC 200 , list
+		return ResponseEntity.ok(vacancies);// SC 200 , list
+	}
+	
+	@GetMapping
+	public ResponseEntity<?> getAllAvailableVacanciesForHr() {
+		System.out.println("in get all");
+		List<VacancyHRDTO> vacancies = 
+				vacancyService.getAllAvailableVacanciesForHr();
+		if (vacancies.isEmpty())
+			return ResponseEntity.status(HttpStatus.NO_CONTENT)// 204
+					.build();
+		//  non empty list
+		return ResponseEntity.ok(vacancies);// SC 200 , list
 	}
 	
 	   @GetMapping("/search")

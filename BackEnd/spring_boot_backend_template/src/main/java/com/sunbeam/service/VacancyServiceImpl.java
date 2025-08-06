@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sunbeam.dao.UserDao;
 import com.sunbeam.dao.VacancyDao;
 import com.sunbeam.dto.VacancyDTO;
+import com.sunbeam.dto.VacancyHRDTO;
 import com.sunbeam.entity.types.JobStatus;
 import lombok.AllArgsConstructor;
 
@@ -27,6 +28,14 @@ public class VacancyServiceImpl implements VacancyService{
 				.map(entity -> modelMapper.map(entity, VacancyDTO.class)) // Stream<DTO>
 				.toList();
 	}
+
+	@Override
+	public List<VacancyHRDTO> getAllAvailableVacanciesForHr() {
+		return vacancydao.findByStatus(JobStatus.ACTIVE)// List<Entity>
+				.stream() // Stream<Entity>
+				.map(entity -> modelMapper.map(entity, VacancyHRDTO.class)) // Stream<DTO>
+				.toList();
+	}
 	   @Override
 	    public List<VacancyDTO> searchVacancies(String keyword) {
 	        return vacancydao.searchByKeyword(keyword)
@@ -34,4 +43,5 @@ public class VacancyServiceImpl implements VacancyService{
 	                .map(entity -> modelMapper.map(entity, VacancyDTO.class))
 	                .toList();
 	    }
+
 }
