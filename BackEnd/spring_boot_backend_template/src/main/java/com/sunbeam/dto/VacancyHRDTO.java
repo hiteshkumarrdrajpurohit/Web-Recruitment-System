@@ -15,6 +15,8 @@ public class VacancyHRDTO {
 	    
 	    private Double maxSalary;
 	    
+	    private String reponsibilites;
+	    
 	    private JobStatus status;
 	    
 	    private LocalDateTime applicationDeadLine;
