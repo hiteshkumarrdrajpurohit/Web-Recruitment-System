@@ -17,5 +17,7 @@ public interface VacancyService {
 	List<VacancyDTO> searchVacancies(String keyword);
 	
 	ApiResponse updateVacancy(Long id,VacancyHRDTO dto);
+	
+
 }
 

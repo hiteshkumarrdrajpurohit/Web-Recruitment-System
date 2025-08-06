@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -64,7 +65,15 @@ public class VacancyController {
 
 				return ResponseEntity.ok(
 						vacancyService.updateVacancy(vacancyId, dto));
+	   }
+	   @DeleteMapping("/{vacancyId}")
+		public ResponseEntity<?> deleteVacancyDetails(@PathVariable 
+				Long vacancytId)
+		{
+			System.out.println("in delete "+vacancytId);
+		
+				return ResponseEntity
+						.ok(vacancyService.deleteVacancy(vacancytId));
 
-			
 		}
 }
