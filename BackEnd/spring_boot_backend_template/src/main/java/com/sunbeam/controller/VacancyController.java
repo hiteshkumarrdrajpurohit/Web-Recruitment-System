@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,4 +56,15 @@ public class VacancyController {
 	            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	        return ResponseEntity.ok(vacancies);
 	    }
+	   
+	   @PutMapping("/{vacancyId}")
+		public ResponseEntity<?> updateDetails(@PathVariable 
+				Long vacancyId, @RequestBody VacancyHRDTO dto) {
+			System.out.println("in update "+vacancyId+" dto");
+
+				return ResponseEntity.ok(
+						vacancyService.updateVacancy(vacancyId, dto));
+
+			
+		}
 }
