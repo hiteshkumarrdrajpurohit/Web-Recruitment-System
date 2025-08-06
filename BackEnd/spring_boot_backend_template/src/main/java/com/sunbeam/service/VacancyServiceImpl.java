@@ -55,5 +55,16 @@ public class VacancyServiceImpl implements VacancyService{
 			modelMapper.map(dto, entity);
 			return new ApiResponse("Updated Vacancy details ....");
 		}
+	   
+	   @Override
+		public ApiResponse deleteVacancy(Long id) {
+			Vacancy vacancy = vacancyDao.findById(id)
+					.orElseThrow(() -> new ResourceNotFoundException("Vacancy not found - invalid ID!!!!"));
+		    // Change status from ACTIVE to CLOSED
+		    vacancy.setStatus(JobStatus.CLOSED);
 
+		    //Save updated vacancy
+		    vacancyDao.save(vacancy);
+			return new ApiResponse("Soft Deleted Vacancy details");
+		}
 }
