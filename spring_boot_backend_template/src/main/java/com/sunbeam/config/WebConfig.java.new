@@ -1,0 +1,61 @@
+package com.sunbeam.config;
+
+import java.util.Arrays;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins(
+                    "http://localhost:5173",  // Vite default port
+                    "http://localhost:4173",  // Vite preview port
+                    "http://127.0.0.1:5173"  // Alternative localhost
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
+                .allowedHeaders("*")
+                .exposedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Allow specific origins
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",    // Vite default dev port
+            "http://localhost:4173",    // Vite preview port
+            "http://127.0.0.1:5173"     // Alternative localhost
+        ));
+        
+        // Allow all standard HTTP methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
+        
+        // Allow all headers
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("*"));
+        
+        // Set max age for preflight requests
+        configuration.setMaxAge(3600L);
+        
+        // Allow credentials
+        configuration.setAllowCredentials(true);
+        
+        // Create and configure the source
+        UrlBasedCorsConfigurationSource configSource = new UrlBasedCorsConfigurationSource();
+        configSource.registerCorsConfiguration("/**", configuration);
+        
+        return configSource;
+    }
+}

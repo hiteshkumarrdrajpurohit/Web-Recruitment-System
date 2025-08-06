@@ -1,30 +1,95 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Search } from "lucide-react";
-import { mockVacancies } from "../../data/mockData";
 import VacancyCard from "./VacancyCard";
 import CreateVacancyModal from "./CreateVacancy";
 import EditVacancyModal from "./EditVacancy";
+import { vacancyService } from "../../services/vacancy";
+import { toast } from "react-hot-toast";
 
 function Vacancies() {
-  const [vacancies, setVacancies] = useState(mockVacancies);
+  const [vacancies, setVacancies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedVacancy, setSelectedVacancy] = useState(null);
 
-  const filteredVacancies = vacancies.filter((vacancy) => {
-    const title = vacancy.title ? vacancy.title.toLowerCase() : "";
-    const department = vacancy.department
-      ? vacancy.department.toLowerCase()
-      : "";
-    const matchesSearch =
-      title.includes(searchTerm.toLowerCase()) ||
-      department.includes(searchTerm.toLowerCase());
-    const matchesFilter =
-      filterStatus === "All" || vacancy.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  useEffect(() => {
+    fetchVacancies();
+  }, [currentPage, searchTerm]);
+
+  const fetchVacancies = async () => {
+    try {
+      setLoading(true);
+      const response = await vacancyService.getAllVacancies(searchTerm, currentPage, pageSize);
+      if (response.success) {
+        setVacancies(response.data);
+      } else {
+        toast.error(response.message || "Failed to fetch vacancies");
+      }
+    } catch (error) {
+      toast.error("Error fetching vacancies");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateVacancy = async (vacancyData) => {
+    try {
+      const response = await vacancyService.createVacancy(vacancyData);
+      if (response.success) {
+        toast.success("Vacancy created successfully");
+        setShowCreateModal(false);
+        fetchVacancies();
+      } else {
+        toast.error(response.message || "Failed to create vacancy");
+      }
+    } catch (error) {
+      toast.error("Error creating vacancy: " + (error.response?.data?.message || error.message));
+      console.error(error);
+    }
+  };
+
+  const handleUpdateVacancy = async (id, vacancyData) => {
+    try {
+      const response = await vacancyService.updateVacancy(id, vacancyData);
+      if (response.success) {
+        toast.success("Vacancy updated successfully");
+        setSelectedVacancy(null);
+        fetchVacancies();
+      } else {
+        toast.error(response.message || "Failed to update vacancy");
+      }
+    } catch (error) {
+      toast.error("Error updating vacancy");
+      console.error(error);
+    }
+  };
+
+  const handleDeleteVacancy = async (id) => {
+    if (window.confirm("Are you sure you want to delete this vacancy?")) {
+      try {
+        const response = await vacancyService.deleteVacancy(id);
+        if (response.success) {
+          toast.success("Vacancy deleted successfully");
+          fetchVacancies();
+        } else {
+          toast.error(response.message || "Failed to delete vacancy");
+        }
+      } catch (error) {
+        toast.error("Error deleting vacancy");
+        console.error(error);
+      }
+    }
+  };
+
+  const filteredVacancies = vacancies.filter((vacancy) => 
+    filterStatus === "All" || vacancy.status === filterStatus
+  );
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -66,9 +131,10 @@ function Vacancies() {
             className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="All">All Status</option>
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="On Hold">On Hold</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DRAFT">Draft</option>
+            <option value="CLOSED">Closed</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
       </div>
@@ -80,9 +146,7 @@ function Vacancies() {
             key={vacancy.id}
             vacancy={vacancy}
             onEdit={(v) => setSelectedVacancy(v)}
-            onDelete={(id) =>
-              setVacancies(vacancies.filter((v) => v.id !== id))
-            }
+            onDelete={handleDeleteVacancy}
           />
         ))}
       </div>
@@ -91,13 +155,7 @@ function Vacancies() {
       {showCreateModal && (
         <CreateVacancyModal
           onClose={() => setShowCreateModal(false)}
-          onSave={(vacancy) => {
-            setVacancies([
-              ...vacancies,
-              { ...vacancy, id: Date.now().toString() },
-            ]);
-            setShowCreateModal(false);
-          }}
+          onSave={handleCreateVacancy}
         />
       )}
       {selectedVacancy && (

@@ -24,11 +24,10 @@ export async function updateProfile(
   summary
 ) {
   try {
-    //create the url for the server
-    const url = `${config.serverURL}/user/profile`;
+    const url = `${config.serverURL}/users/profile`;
     const token = sessionStorage.getItem("token");
+    const userId = sessionStorage.getItem("userId");
 
-    //create the request body
     const body = {
       firstName,
       lastName,
@@ -51,20 +50,22 @@ export async function updateProfile(
       designation,
       summary,
     };
-    //send the request to the server and update the user
-    const response = await axios.put(url, body, {
+    
+    const response = await axios.put(`${url}/${userId}`, body, {
       headers: { token },
     });
     if (response.status == 200) {
-      return response.data; //return the data from the response
+      return response.data;
     }
   } catch (ex) {
     console.log(`exception: `, ex);
   }
 }
+
 export async function getProfile() {
   try {
-    const url = `${config.serverURL}/user/profile`;
+    const userId = sessionStorage.getItem("userId");
+    const url = `${config.serverURL}/users/profile/${userId}`;
     const token = sessionStorage.getItem("token");
     const response = await axios.get(url, {
       headers: { token },
@@ -79,8 +80,8 @@ export async function getProfile() {
 
 export async function getAllJobsFromServer(searchTerm) {
   try {
-    let url = `${config.serverURL}/jobs`;
-    if (searchTerm.length > 0) {
+    let url = `${config.serverURL}/vacancies`;
+    if (searchTerm && searchTerm.length > 0) {
       url += "?searchTerm=" + searchTerm;
     }
     const token = sessionStorage.getItem("token");
@@ -94,11 +95,149 @@ export async function getAllJobsFromServer(searchTerm) {
     console.log(`exception: `, ex);
   }
 }
-const API_BASE_URL = "http://your-api-base-url.com/api";
+
+// New method for getting active job listings
+export async function getActiveJobListings(searchTerm, location, jobType) {
+  try {
+    let url = `${config.serverURL}/vacancies/active`;
+    const params = new URLSearchParams();
+    
+    if (searchTerm && searchTerm.trim()) {
+      params.append('searchTerm', searchTerm);
+    }
+    if (location && location.trim()) {
+      params.append('location', location);
+    }
+    if (jobType && jobType.trim()) {
+      params.append('jobType', jobType);
+    }
+    
+    if (params.toString()) {
+      url += '?' + params.toString();
+    }
+    
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
+
+export async function getMyApplications() {
+  try {
+    const userId = sessionStorage.getItem("userId");
+    const url = `${config.serverURL}/applications/user/${userId}`;
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
+
+export async function getApplicationById(applicationId) {
+  try {
+    const url = `${config.serverURL}/applications/${applicationId}`;
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
+
+export async function createApplication(applicationData) {
+  try {
+    const url = `${config.serverURL}/applications`;
+    const token = sessionStorage.getItem("token");
+    const response = await axios.post(url, applicationData, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
+
+// New method for applying to a job
+export async function applyForJob(vacancyId, coverLetter, resumeFileName, resumeFilePath) {
+  try {
+    const userId = sessionStorage.getItem("userId");
+    const url = `${config.serverURL}/job-applications/apply`;
+    const token = sessionStorage.getItem("token");
+    
+    const applicationData = {
+      userId: parseInt(userId),
+      vacancyId: vacancyId,
+      coverLetter: coverLetter,
+      resumeFileName: resumeFileName,
+      resumeFilePath: resumeFilePath
+    };
+    
+    const response = await axios.post(url, applicationData, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    throw ex;
+  }
+}
+
+// New method for checking if user has applied for a job
+export async function checkUserApplication(vacancyId) {
+  try {
+    const userId = sessionStorage.getItem("userId");
+    const url = `${config.serverURL}/job-applications/user/${userId}/vacancy/${vacancyId}`;
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
+
+// New method for getting user's applied jobs
+export async function getUserAppliedJobs() {
+  try {
+    const userId = sessionStorage.getItem("userId");
+    const url = `${config.serverURL}/job-applications/user/${userId}/applied`;
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(url, {
+      headers: { token },
+    });
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+  }
+}
 
 export const fetchVacancies = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies`);
+    const response = await fetch(`${config.serverURL}/vacancies`);
     if (!response.ok) {
       throw new Error("Failed to fetch vacancies");
     }
@@ -111,10 +250,12 @@ export const fetchVacancies = async () => {
 
 export const createVacancy = async (vacancyData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies`, {
+    const token = sessionStorage.getItem("token");
+    const response = await fetch(`${config.serverURL}/vacancies`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "token": token
       },
       body: JSON.stringify(vacancyData),
     });
@@ -130,10 +271,12 @@ export const createVacancy = async (vacancyData) => {
 
 export const updateVacancy = async (id, vacancyData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
+    const token = sessionStorage.getItem("token");
+    const response = await fetch(`${config.serverURL}/vacancies/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        "token": token
       },
       body: JSON.stringify(vacancyData),
     });
@@ -149,8 +292,12 @@ export const updateVacancy = async (id, vacancyData) => {
 
 export const deleteVacancy = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
+    const token = sessionStorage.getItem("token");
+    const response = await fetch(`${config.serverURL}/vacancies/${id}`, {
       method: "DELETE",
+      headers: {
+        "token": token
+      }
     });
     if (!response.ok) {
       throw new Error("Failed to delete vacancy");

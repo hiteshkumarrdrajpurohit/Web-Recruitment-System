@@ -1,4 +1,6 @@
+export const API_BASE_URL = 'http://localhost:8090';
+
+// Additional configuration if needed
 export const config = {
-    serverURL: 'http://localhost:8080',
-  }
-  
+    serverURL: API_BASE_URL,
+}

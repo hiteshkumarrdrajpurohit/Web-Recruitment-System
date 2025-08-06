@@ -5,12 +5,14 @@ import { Edit, Trash2, MapPin, Calendar, DollarSign, Users, Eye } from "lucide-r
 function VacancyCard({ vacancy, onEdit, onDelete }) {
   const getStatusColor = (status) => {
     switch (status) {
-      case "Open":
+      case "ACTIVE":
         return "bg-green-100 text-green-800";
-      case "Closed":
+      case "CLOSED":
         return "bg-red-100 text-red-800";
-      case "On Hold":
+      case "DRAFT":
         return "bg-yellow-100 text-yellow-800";
+      case "CANCELLED":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -55,18 +57,22 @@ function VacancyCard({ vacancy, onEdit, onDelete }) {
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="h-4 w-4 mr-2" />
-            Deadline: {vacancy.deadline ? new Date(vacancy.deadline).toLocaleDateString() : "N/A"}
+            Deadline: {vacancy.applicationDeadline ? new Date(vacancy.applicationDeadline).toLocaleDateString() : "N/A"}
           </div>
           <div className="flex items-center text-sm text-gray-500">
-            <DollarSign className="h-4 w-4 mr-2" />$
-            {typeof vacancy.salary === "number" ? vacancy.salary.toLocaleString() : ""}
+            <DollarSign className="h-4 w-4 mr-2" />
+            ${vacancy.minSalary?.toLocaleString() || 0} - ${vacancy.maxSalary?.toLocaleString() || 0}
+          </div>
+          <div className="flex items-center text-sm text-gray-500">
+            <Users className="h-4 w-4 mr-2" />
+            {vacancy.employementType || "N/A"}
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
           <div className="flex items-center text-sm text-gray-500">
             <Users className="h-4 w-4 mr-1" />
-            {vacancy.applicantCount} applicants
+            {vacancy.numberOfVacencies || 1} vacancy(ies)
           </div>
           <button className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500">
             <Eye className="h-4 w-4 mr-1" />

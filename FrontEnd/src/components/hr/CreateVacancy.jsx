@@ -1,37 +1,63 @@
 
 import React, { useState } from "react";
+import { vacancyService } from "../../services/vacancy";
+import { toast } from "react-hot-toast";
 
 function CreateVacancyModal({ onClose, onSave }) {
   const [formData, setFormData] = useState({
     title: "",
     department: "",
     location: "",
-    type: "Full-time",
+    employementType: "FULL_TIME",
     description: "",
-    responsibilities: "",
-    salary: "",
-    deadline: "",
+    jobDescription: "",
+    reponsibilites: "",
+    minSalary: "",
+    maxSalary: "",
+    applicationDeadline: "",
+    requiredEducation: "",
+    requiredExperience: "",
+    numberOfVacencies: "1",
+    shiftDetails: "",
+    status: "ACTIVE"
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const vacancy = {
-      title: formData.title,
-      department: formData.department,
-      location: formData.location,
-      type: formData.type,
-      description: formData.description,
-      responsibilities: formData.responsibilities
-        .split("\n")
-        .filter((r) => r.trim()),
-      salary: parseInt(formData.salary),
-      status: "Open",
-      postedDate: new Date().toISOString().split("T")[0],
-      deadline: formData.deadline,
-      applicantCount: 0,
-      createdBy: "HR001",
-    };
-    onSave(vacancy);
+    try {
+      const vacancy = {
+        title: formData.title,
+        department: formData.department,
+        location: formData.location,
+        employementType: formData.employementType,
+        description: formData.description,
+        jobDescription: formData.jobDescription,
+        reponsibilites: formData.reponsibilites,
+        minSalary: parseInt(formData.minSalary),
+        maxSalary: parseInt(formData.maxSalary),
+        applicationDeadline: formData.applicationDeadline,
+        requiredEducation: formData.requiredEducation,
+        requiredExperience: formData.requiredExperience,
+        numberOfVacencies: parseInt(formData.numberOfVacencies),
+        shiftDetails: formData.shiftDetails,
+        status: formData.status
+      };
+      // Get hrManagerId from sessionStorage
+      const hrManagerId = sessionStorage.getItem('userId');
+      const response = await vacancyService.createVacancy(vacancy, hrManagerId);
+      if (response.success) {
+        toast.success("Vacancy created successfully!");
+        onSave(response.data);
+        onClose();
+      } else {
+        toast.error(response.message || "Failed to create vacancy");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
+      toast.error("Error creating vacancy: " + errorMessage);
+      console.error("Error creating vacancy:", error);
+      console.error("Full error response:", error.response?.data);
+    }
   };
 
   return (
@@ -74,7 +100,7 @@ function CreateVacancyModal({ onClose, onSave }) {
               </div>
             </div>
 
-            {/* Location & Type */}
+            {/* Location & Employment Type */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -95,16 +121,16 @@ function CreateVacancyModal({ onClose, onSave }) {
                   Employment Type
                 </label>
                 <select
-                  value={formData.type}
+                  value={formData.employementType}
                   onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
+                    setFormData({ ...formData, employementType: e.target.value })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Internship">Internship</option>
+                  <option value="FULL_TIME">Full-time</option>
+                  <option value="PART_TIME">Part-time</option>
+                  <option value="CONTRACT">Contract</option>
+                  <option value="INTERNSHIP">Internship</option>
                 </select>
               </div>
             </div>
@@ -112,7 +138,7 @@ function CreateVacancyModal({ onClose, onSave }) {
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Job Description
+                Description
               </label>
               <textarea
                 required
@@ -122,42 +148,78 @@ function CreateVacancyModal({ onClose, onSave }) {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Brief description of the position"
+              />
+            </div>
+
+            {/* Job Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Detailed Job Description
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={formData.jobDescription}
+                onChange={(e) =>
+                  setFormData({ ...formData, jobDescription: e.target.value })
+                }
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Detailed job description and requirements"
               />
             </div>
 
             {/* Responsibilities */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Responsibilities (one per line)
+                Responsibilities
               </label>
               <textarea
                 required
                 rows={3}
-                value={formData.responsibilities}
+                value={formData.reponsibilites}
                 onChange={(e) =>
-                  setFormData({ ...formData, responsibilities: e.target.value })
+                  setFormData({ ...formData, reponsibilites: e.target.value })
                 }
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Manage team projects\nDevelop new features\nCollaborate with stakeholders"
+                placeholder="Key responsibilities and duties"
               />
             </div>
 
-            {/* Salary & Deadline */}
+            {/* Salary Range */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Offered Salary ($)
+                  Minimum Salary ($)
                 </label>
                 <input
                   type="number"
                   required
-                  value={formData.salary}
+                  value={formData.minSalary}
                   onChange={(e) =>
-                    setFormData({ ...formData, salary: e.target.value })
+                    setFormData({ ...formData, minSalary: e.target.value })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Maximum Salary ($)
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={formData.maxSalary}
+                  onChange={(e) =>
+                    setFormData({ ...formData, maxSalary: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Application Deadline & Number of Vacancies */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Application Deadline
@@ -165,12 +227,97 @@ function CreateVacancyModal({ onClose, onSave }) {
                 <input
                   type="date"
                   required
-                  value={formData.deadline}
+                  value={formData.applicationDeadline}
                   onChange={(e) =>
-                    setFormData({ ...formData, deadline: e.target.value })
+                    setFormData({ ...formData, applicationDeadline: e.target.value })
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Number of Vacancies
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={formData.numberOfVacencies}
+                  onChange={(e) =>
+                    setFormData({ ...formData, numberOfVacencies: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Required Education & Experience */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Required Education
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.requiredEducation}
+                  onChange={(e) =>
+                    setFormData({ ...formData, requiredEducation: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Bachelor's Degree in Computer Science"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Required Experience
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.requiredExperience}
+                  onChange={(e) =>
+                    setFormData({ ...formData, requiredExperience: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., 3+ years of experience"
+                />
+              </div>
+            </div>
+
+            {/* Shift Details & Status */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Shift Details
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.shiftDetails}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shiftDetails: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., 9 AM - 6 PM, Monday to Friday"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="DRAFT">Draft</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="CLOSED">Closed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
               </div>
             </div>
 

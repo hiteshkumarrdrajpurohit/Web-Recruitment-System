@@ -2,14 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../App';
-
-{/* dummy users */}
-const DUMMY_USERS = [
-  { id: 1, name: 'Kunal', email: 'a@gmail.com', password: '123456', role: 'applicant' },
-  { id: 2, name: 'Hitesh', email: 'h@gmail.com', password: '123456', role: 'hr' },
-];
-
-
+import { handleSignIn } from '../services/auth';
 
 const BG_IMG= "../";
 function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
@@ -22,22 +15,48 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = (e) => {
+  const handleSignInSubmit = async (e) => {
     e.preventDefault();
-    const user = DUMMY_USERS.find(u => u.email === email && u.password === password && u.role === role);
-    if (user) {
-      setError('');
-      setUser(user);
-      if (user.role === 'hr') {
-        navigate('/layout/dashboard');
-      } else if (user.role === 'applicant') {
-        navigate('/applicantlayout/user/dashboard');
+    setError('');
+    setLoading(true);
+    
+    try {
+      console.log('Attempting signin with:', { email, password });
+      const response = await handleSignIn(email, password);
+      console.log('Signin response:', response);
+      
+      if (response && response.success && response.data) {
+        // Store user data in session storage with null checks
+        const token = response.data.token || 'dummy-token';
+        const userId = response.data.id || '1';
+        const userRole = response.data.role || 'USER';
+        
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('userId', userId);
+        sessionStorage.setItem('userRole', userRole);
+        
+        setUser(response.data);
+        
+        // Navigate based on role - treat USER as applicant
+        if (userRole === 'HRMANAGER' || userRole === 'ADMIN') {
+          navigate('/layout/dashboard');
+        } else {
+          // USER, CANDIDATE, RECRUITER all go to applicant dashboard
+          navigate('/applicantlayout/user/dashboard');
+        }
+      } else {
+        setError(response?.message || 'Invalid credentials. Please check your email and password.');
       }
-    } else {
-      setError('Invalid credentials');
+    } catch (error) {
+      console.error('Signin error:', error);
+      setError('An error occurred during signin. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
      <div className="relative min-h-screen flex flex-col justify-center items-center"> 
 
@@ -67,7 +86,7 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
 </div>
 
 
-<form className="bg-white rounded-xl shadow p-8 flex flex-col gap-4" onSubmit={handleSignIn}>
+<form className="bg-white rounded-xl shadow p-8 flex flex-col gap-4" onSubmit={handleSignInSubmit}>
           {/* Role Toggle */}
           <div className="flex mb-2 rounded-lg overflow-hidden border border-gray-200">
             <button type="button" className={`flex-1 py-2 text-sm font-semibold ${role === 'applicant' ? 'bg-blue-50 text-blue-700' : 'bg-white text-gray-500'}`} onClick={() => setRole('applicant')}>Applicant</button>
@@ -112,19 +131,28 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
           {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
           <button
             type="submit"
-            className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow"
-            
+            disabled={loading}
+            className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
           <div className="text-center mt-2">
             {role === 'applicant' && (
               <button
                 type="button"
                 className="text-sm text-blue-600 hover:underline"
-                onClick={onSwitchToSignUp}
+                onClick={() => navigate('/signup')}
               >
                 Don't have an account?  <span className="font-semibold">  Sign up</span> 
+              </button>
+            )}
+            {role === 'hr' && (
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:underline"
+                onClick={() => navigate('/hr-signup')}
+              >
+                Don't have an HR account?  <span className="font-semibold">  Register here</span> 
               </button>
             )}
           </div>

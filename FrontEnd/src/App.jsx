@@ -5,8 +5,10 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
+import HrSignUp from "./components/HrSignUp";
 
 import Applicants from "./components/hr/Applicants";
 import HRDashboard from "./components/hr/HRDashboard";
@@ -79,6 +81,7 @@ function App() {
         <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/hr-signup" element={<HrSignUp />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
@@ -106,7 +109,22 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
-
+    <Toaster
+      position="top-right"
+      toastOptions={{
+        duration: 3000,
+        style: {
+          background: '#363636',
+          color: '#fff',
+        },
+        success: {
+          duration: 3000,
+          theme: {
+            primary: '#4aed88',
+          },
+        },
+      }}
+    />
    </AuthContext.Provider>
   );
 }

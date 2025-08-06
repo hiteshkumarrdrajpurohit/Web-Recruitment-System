@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiUser } from 'react-icons/fi';
+import { handleSignUp } from '../services/auth';
+import { useNavigate } from 'react-router-dom';
 
 const BG_IMG = "../assets/bg.jpg";
-function SignUp({ onSwitchToSignIn, onSignUp }) {
-
-    const role = 'applicant';
+function SignUp({ onSwitchToSignIn }) {
+    const navigate = useNavigate();
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
     const [phone, setPhone] = useState('');
@@ -16,8 +17,9 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSignUp = (e) => {
+    const handleSignUpSubmit = async (e) => {
         e.preventDefault();
         if (!firstname || !lastname || !gender || !dob || !phone || !email || !password || !confirmPassword) {
             setError('Please fill all fields.');
@@ -27,10 +29,41 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
             setError('Passwords do not match.');
             return;
         }
+        
         setError('');
-        if (onSignUp) onSignUp(role);
+        setLoading(true);
+        
+        try {
+            const userData = {
+                firstName: firstname,
+                lastName: lastname,
+                email: email,
+                password: password,
+                phoneNumber: phone,
+                dateOfBirth: dob,
+                role: 'USER' // Changed from CANDIDATE to USER
+            };
+            
+            const response = await handleSignUp(userData);
+            
+            if (response && response.success) {
+                // Store user data in session storage
+                sessionStorage.setItem('token', response.data.token || 'dummy-token');
+                sessionStorage.setItem('userId', response.data.id || '1');
+                sessionStorage.setItem('userRole', 'USER');
+                
+                // Navigate to applicant dashboard
+                navigate('/applicantlayout/user/dashboard');
+            } else {
+                setError(response?.message || 'Signup failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            setError('An error occurred during signup. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
-
 
     return (
         <div className="relative min-h-screen flex flex-col justify-center items-center">
@@ -60,7 +93,7 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
                 </div>
                 <form
           className="bg-white rounded-xl shadow p-8 flex flex-col gap-4"
-          onSubmit={handleSignUp}
+          onSubmit={handleSignUpSubmit}
         >
 
           {/* Role Toggle (Job Seeker only) */}
@@ -235,9 +268,10 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
           {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
           <button
             type="submit"
-            className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow"
+            disabled={loading}
+            className="w-full py-2 mt-2 text-white rounded font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Up
+            {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
           <div className="text-center mt-2">
             <button
@@ -252,15 +286,7 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
         </form>
             </div>
         </div>
-
-
     )
-
-
-
-
-
-
 }
 
 export default SignUp;
