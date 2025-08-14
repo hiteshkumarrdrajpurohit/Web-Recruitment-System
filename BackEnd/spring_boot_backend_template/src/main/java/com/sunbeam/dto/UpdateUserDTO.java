@@ -8,35 +8,30 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateUserDTO {
-
-    // Newly added fields to fix the error
-    private String firstName;
-
-    private String lastName;
-
-    private String password;
-
-    private String phoneNumber;
-
+	
+	private String phoneNumber;
+   
     private String skills;
-
+    
     private String address;
 
-    private String city;
-
-    private String state;
-
-    private String country;
-
-    private Long zipCode;
+	private  String city;
+	    
+	private String State;
+ 
+	private Long ZipCode;
+	
+	private String Country;
 
     private String orgName;
 
-    private String designation;
-
+	private String Designation;
+	
     private LocalDate startDate;
-
+	  	   
     private LocalDate endDate;
-
+   
     private String summary;
-}
+
+	}
+

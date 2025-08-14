@@ -6,13 +6,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sunbeam.custom_exceptions.ResourceNotFoundException;
 import com.sunbeam.dao.UserDao;
 import com.sunbeam.dao.VacancyDao;
-import com.sunbeam.dto.ApiResponse;
 import com.sunbeam.dto.VacancyDTO;
-import com.sunbeam.dto.VacancyHRDTO;
-import com.sunbeam.entity.Vacancy;
 import com.sunbeam.entity.types.JobStatus;
 import lombok.AllArgsConstructor;
 
@@ -22,49 +18,13 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor	
 public class VacancyServiceImpl implements VacancyService{
 	
-	private VacancyDao vacancyDao;
+	private VacancyDao vacancydao;
 	private final ModelMapper modelMapper;
 	@Override
 	public List<VacancyDTO> getAllAvailableVacancies() {
-		return vacancyDao.findByStatus(JobStatus.ACTIVE)// List<Entity>
+		return vacancydao.findByStatus(JobStatus.ACTIVE)// List<Entity>
 				.stream() // Stream<Entity>
 				.map(entity -> modelMapper.map(entity, VacancyDTO.class)) // Stream<DTO>
 				.toList();
 	}
-
-	@Override
-	public List<VacancyHRDTO> getAllAvailableVacanciesForHr() {
-		return vacancyDao.findByStatus(JobStatus.ACTIVE)// List<Entity>
-				.stream() // Stream<Entity>
-				.map(entity -> modelMapper.map(entity, VacancyHRDTO.class)) // Stream<DTO>
-				.toList();
-	}
-	   @Override
-	    public List<VacancyDTO> searchVacancies(String keyword) {
-	        return vacancyDao.searchByKeyword(keyword)
-	                .stream()
-	                .map(entity -> modelMapper.map(entity, VacancyDTO.class))
-	                .toList();
-	    }
-
-	   @Override
-		public ApiResponse updateVacancy(Long id, VacancyHRDTO dto) {
-			Vacancy entity = vacancyDao.findById(id)
-					.orElseThrow(() -> new ResourceNotFoundException("Invalid restaurant ID!!!!"));
-
-			modelMapper.map(dto, entity);
-			return new ApiResponse("Updated Vacancy details ....");
-		}
-	   
-	   @Override
-		public ApiResponse deleteVacancy(Long id) {
-			Vacancy vacancy = vacancyDao.findById(id)
-					.orElseThrow(() -> new ResourceNotFoundException("Vacancy not found - invalid ID!!!!"));
-		    // Change status from ACTIVE to CLOSED
-		    vacancy.setStatus(JobStatus.CLOSED);
-
-		    //Save updated vacancy
-		    vacancyDao.save(vacancy);
-			return new ApiResponse("Soft Deleted Vacancy details");
-		}
 }
