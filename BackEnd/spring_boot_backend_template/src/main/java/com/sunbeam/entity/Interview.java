@@ -51,6 +51,10 @@ public class Interview  extends BaseEntity {
     private String feedback;
 
     private String meetUrl;
+    
+    private String location;
+    
+    private Integer duration; // duration in minutes
         
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "createdBy", nullable = false)

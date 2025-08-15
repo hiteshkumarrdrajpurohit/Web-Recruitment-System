@@ -2,5 +2,5 @@ package com.sunbeam.entity.types;
 
 public enum Decision {
 
-	SELECTED, REJECTED, HOLD;
+	SELECTED, REJECTED, HOLD, HIRE;
 }

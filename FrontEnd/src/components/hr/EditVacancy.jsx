@@ -3,15 +3,18 @@ import React, { useState } from "react";
 
 function EditVacancyModal({ vacancy, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    title: vacancy.title,
-    department: vacancy.department,
-    location: vacancy.location,
-    type: vacancy.type,
-    description: vacancy.description,
-    responsibilities: vacancy.responsibilities.join("\n"),
-    salary: vacancy.salary.toString(),
-    deadline: vacancy.deadline,
-    status: vacancy.status,
+    title: vacancy.title || '',
+    department: vacancy.department || '',
+    location: vacancy.location || '',
+    type: vacancy.employementType === 'FULL_TIME' ? 'Full-time' : 
+          vacancy.employementType === 'PART_TIME' ? 'Part-time' : 
+          vacancy.employementType === 'CONTRACT' ? 'Contract' : 
+          vacancy.employementType === 'INTERNSHIP' ? 'Internship' : 'Full-time',
+    description: vacancy.description || '',
+    responsibilities: vacancy.reponsibilites || '', // Note: matches backend spelling
+    salary: vacancy.minSalary ? vacancy.minSalary.toString() : '',
+    deadline: vacancy.applicationDeadline || '',
+    status: vacancy.status || 'ACTIVE',
   });
 
   const handleSubmit = (e) => {
@@ -21,14 +24,18 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
       title: formData.title,
       department: formData.department,
       location: formData.location,
-      type: formData.type,
+      employementType: formData.type.toUpperCase().replace('-', '_'), // Convert to enum format
       description: formData.description,
-      responsibilities: formData.responsibilities
-        .split("\n")
-        .filter((r) => r.trim()),
-      salary: parseInt(formData.salary),
-      deadline: formData.deadline,
+      jobDescription: formData.description, // Duplicate for entity mapping
+      reponsibilites: formData.responsibilities, // Note: matches backend spelling
+      minSalary: parseInt(formData.salary),
+      maxSalary: Math.round(parseInt(formData.salary) * 1.2), // Set max as 20% higher
+      applicationDeadline: formData.deadline,
       status: formData.status,
+      numberOfVacencies: vacancy.numberOfVacencies || 1,
+      requiredEducation: vacancy.requiredEducation || "Bachelor's degree",
+      requiredExperience: vacancy.requiredExperience || "2+ years",
+      shiftDetails: vacancy.shiftDetails || "Day shift"
     };
     onSave(updatedVacancy);
   };
@@ -143,7 +150,7 @@ function EditVacancyModal({ vacancy, onClose, onSave }) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Offered Salary ($)
+                  Offered Salary (₹)
                 </label>
                 <input
                   type="number"

@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../App';
-
-{/* dummy users */}
-const DUMMY_USERS = [
-  { id: 1, name: 'Kunal', email: 'a@gmail.com', password: '123456', role: 'applicant' },
-  { id: 2, name: 'Hitesh', email: 'h@gmail.com', password: '123456', role: 'hr' },
-];
+import { handleSignIn as authSignIn } from '../services/auth';
 
 
 
@@ -17,25 +12,65 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
   const navigate = useNavigate();
 
   {/* state variables */}
-  const [role, setRole] = useState('applicant');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    const user = DUMMY_USERS.find(u => u.email === email && u.password === password && u.role === role);
-    if (user) {
-      setError('');
-      setUser(user);
-      if (user.role === 'hr') {
-        navigate('/layout/dashboard');
-      } else if (user.role === 'applicant') {
-        navigate('/applicantlayout/user/dashboard');
+    setError('');
+    
+    try {
+      const result = await authSignIn(email, password);
+      
+      if (result.success) {
+        // Decode token to get user details from backend
+        let userRole = 'applicant'; // default
+        let userId = null;
+        let userEmail = email;
+        
+        try {
+          const tokenPayload = JSON.parse(atob(result.token.split('.')[1]));
+          console.log('Token payload:', tokenPayload); // For debugging
+          
+          // Extract role
+          if (tokenPayload.role === 'ROLE_HRMANAGER') {
+            userRole = 'hr';
+          } else if (tokenPayload.role === 'ROLE_USER') {
+            userRole = 'applicant';
+          }
+          
+          // Extract user ID and email from token
+          userId = tokenPayload.sub || tokenPayload.userId || tokenPayload.email; // Try different field names
+          userEmail = tokenPayload.email || email;
+          
+        } catch (tokenError) {
+          console.warn('Could not parse token details, using default:', tokenError);
+        }
+        
+        // Create user object from backend response
+        const user = {
+          id: userId,
+          email: userEmail,
+          role: userRole,
+          token: result.token
+        };
+        
+        setUser(user);
+        
+        // Navigate based on actual user role
+        if (userRole === 'hr') {
+          navigate('/layout/dashboard');
+        } else {
+          navigate('/applicantlayout/user/dashboard');
+        }
+      } else {
+        setError(result.error || 'Login failed');
       }
-    } else {
-      setError('Invalid credentials');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Login failed. Please try again.');
     }
   };
   return (
@@ -63,15 +98,16 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
             <span className="text-2xl font-bold text-white"> <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M16 3v4M8 3v4" /></svg> </span>
           </div>
           <h2 className="text-3xl font-bold mb-2 text-white">Welcome To HireHub</h2>
-          <p className="text-gray-200 mb-4">Sign in Here</p>
+          <p className="text-gray-200 mb-4">Sign in to your account</p>
 </div>
 
 
 <form className="bg-white rounded-xl shadow p-8 flex flex-col gap-4" onSubmit={handleSignIn}>
-          {/* Role Toggle */}
-          <div className="flex mb-2 rounded-lg overflow-hidden border border-gray-200">
-            <button type="button" className={`flex-1 py-2 text-sm font-semibold ${role === 'applicant' ? 'bg-blue-50 text-blue-700' : 'bg-white text-gray-500'}`} onClick={() => setRole('applicant')}>Applicant</button>
-            <button type="button" className={`flex-1 py-2 text-sm font-semibold ${role === 'hr' ? 'bg-blue-50 text-blue-700' : 'bg-white text-gray-500'}`} onClick={() => setRole('hr')}>HR Manager</button>
+          {/* Info Banner */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 text-sm text-center">
+              💡 Your account type (Job Seeker or HR Manager) is automatically detected
+            </p>
           </div>
           <div>
             <label className="block mb-1 font-medium">Email Address <span className="text-red-500">*</span></label>
@@ -118,26 +154,22 @@ function SignIn({ onSwitchToForgetPassword,onSwitchToSignUp }) {
             Sign In
           </button>
           <div className="text-center mt-2">
-            {role === 'applicant' && (
-              <button
-                type="button"
-                className="text-sm text-blue-600 hover:underline"
-                onClick={onSwitchToSignUp}
-              >
-                Don't have an account?  <span className="font-semibold">  Sign up</span> 
-              </button>
-            )}
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:underline"
+              onClick={onSwitchToSignUp}
+            >
+              Don't have an account?  <span className="font-semibold">  Sign up</span> 
+            </button>
           </div>
           <div className="text-center mt-2">
-            {role === 'applicant' && (
-              <button
-                type="button"
-                className="text-sm text-blue-600 hover:underline"
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:underline"
                 onClick={() => navigate('/forgot-password')}
               >
                 Forget Your password?  <span className="font-semibold"> Click here</span> 
               </button>
-            )}
           </div>
          
     </form>

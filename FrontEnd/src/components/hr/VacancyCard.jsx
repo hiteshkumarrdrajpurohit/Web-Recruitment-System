@@ -1,10 +1,15 @@
 
 import React from "react";
-import { Edit, Trash2, MapPin, Calendar, DollarSign, Users, Eye } from "lucide-react";
+import { Edit, Trash2, MapPin, Calendar, DollarSign, Users, Eye, IndianRupee } from "lucide-react";
 
 function VacancyCard({ vacancy, onEdit, onDelete }) {
   const getStatusColor = (status) => {
-    switch (status) {
+    // Map backend status to display status and colors
+    const normalizedStatus = status === 'ACTIVE' ? 'Open' : 
+                             status === 'INACTIVE' ? 'Closed' : 
+                             status === 'ON_HOLD' ? 'On Hold' : status;
+    
+    switch (normalizedStatus) {
       case "Open":
         return "bg-green-100 text-green-800";
       case "Closed":
@@ -16,6 +21,12 @@ function VacancyCard({ vacancy, onEdit, onDelete }) {
     }
   };
 
+  const getDisplayStatus = (status) => {
+    return status === 'ACTIVE' ? 'Open' : 
+           status === 'INACTIVE' ? 'Closed' : 
+           status === 'ON_HOLD' ? 'On Hold' : status;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200">
       <div className="p-6">
@@ -25,7 +36,7 @@ function VacancyCard({ vacancy, onEdit, onDelete }) {
               vacancy.status
             )}`}
           >
-            {vacancy.status}
+            {getDisplayStatus(vacancy.status)}
           </span>
           <div className="flex space-x-2">
             <button
@@ -55,18 +66,22 @@ function VacancyCard({ vacancy, onEdit, onDelete }) {
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="h-4 w-4 mr-2" />
-            Deadline: {vacancy.deadline ? new Date(vacancy.deadline).toLocaleDateString() : "N/A"}
+            Deadline: {vacancy.applicationDeadLine ? new Date(vacancy.applicationDeadLine).toLocaleDateString() : "N/A"}
           </div>
           <div className="flex items-center text-sm text-gray-500">
-            <DollarSign className="h-4 w-4 mr-2" />$
-            {typeof vacancy.salary === "number" ? vacancy.salary.toLocaleString() : ""}
+            <IndianRupee className="h-4 w-4 mr-2" />
+            {vacancy.minSalary && vacancy.maxSalary ? 
+              `${vacancy.minSalary.toLocaleString()} - ${vacancy.maxSalary.toLocaleString()}` :
+              vacancy.minSalary ? `${vacancy.minSalary.toLocaleString()}+` :
+              'Salary not disclosed'
+            }
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
           <div className="flex items-center text-sm text-gray-500">
             <Users className="h-4 w-4 mr-1" />
-            {vacancy.applicantCount} applicants
+            {vacancy.numberOfVacancies || 1} position{(vacancy.numberOfVacancies || 1) > 1 ? 's' : ''}
           </div>
           <button className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500">
             <Eye className="h-4 w-4 mr-1" />

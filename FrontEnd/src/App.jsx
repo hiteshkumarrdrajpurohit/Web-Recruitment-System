@@ -67,8 +67,44 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+// Authentication wrapper component to handle sign in/sign up switching
+function AuthWrapper() {
+  const [currentView, setCurrentView] = useState('signin');
+  
+  const switchToSignUp = () => setCurrentView('signup');
+  const switchToSignIn = () => setCurrentView('signin');
+  
+  if (currentView === 'signup') {
+    return <SignUp onSwitchToSignIn={switchToSignIn} />;
+  }
+  
+  return <SignIn onSwitchToSignUp={switchToSignUp} />;
+}
+
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUserState] = useState(() => {
+    // Initialize user state from localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        localStorage.removeItem('user');
+      }
+    }
+    return null;
+  });
+
+  // Wrapper function to save user to localStorage
+  const setUser = (userData) => {
+    setUserState(userData);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      localStorage.removeItem('user');
+    }
+  };
 
   return (
 
@@ -76,9 +112,9 @@ function App() {
     <Router>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<SignIn />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/" element={<AuthWrapper />} />
+        <Route path="/signin" element={<AuthWrapper />} />
+        <Route path="/signup" element={<AuthWrapper />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
 

@@ -1,60 +1,215 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, UserCheck, UserX } from 'lucide-react';
-import { mockApplicants, mockVacancies } from '../../data/mockData';
+import { Search, Filter, Download, Eye, UserCheck, UserX, RefreshCw } from 'lucide-react';
+import { getAllApplications, updateApplicationStatus, getAllVacancies, getAllCandidates, createHiringDecision } from '../../services/hr';
 
 function HRApplicants() {
-  const [applicants, setApplicants] = useState([]);
+  const [candidates, setCandidates] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [vacancies, setVacancies] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // Debug: Make sure no variable conflicts exist
+  console.log('HR Applicants component loaded - no selectedApplication variable');
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setApplicants(mockApplicants);
-      setVacancies(mockVacancies);
-      setLoading(false);
-    }, 500); // Simulated delay
+    loadData();
   }, []);
 
-  const filteredApplicants = applicants.filter(applicant => {
-    const matchesSearch =
-      applicant.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Load candidates, applications, and vacancies in parallel
+      const [candidatesResult, applicationsResult, vacanciesResult] = await Promise.all([
+        getAllCandidates(),
+        getAllApplications(),
+        getAllVacancies()
+      ]);
 
-    const matchesFilter = filterStatus === 'All' || applicant.status === filterStatus;
+      if (candidatesResult.success) {
+        setCandidates(candidatesResult.data);
+      } else {
+        setError(candidatesResult.error || 'Failed to load candidates');
+      }
+
+      if (applicationsResult.success) {
+        setApplications(applicationsResult.data);
+      } else {
+        console.warn('Failed to load applications:', applicationsResult.error);
+      }
+
+      if (vacanciesResult.success) {
+        setVacancies(vacanciesResult.data);
+      } else {
+        console.warn('Failed to load vacancies:', vacanciesResult.error);
+      }
+
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCandidates = candidates.filter(candidate => {
+    // Candidates are already filtered by USER role on the backend
+    
+    const matchesSearch =
+      (candidate.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.skills || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.designation || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Get the candidate's applications to determine their status
+    const candidateApplications = applications.filter(app => app.user?.id === candidate.id);
+    const hasApplications = candidateApplications.length > 0;
+    
+    // Determine candidate status based on their most recent application
+    let candidateStatus = 'No Applications';
+    if (hasApplications) {
+      const latestApp = candidateApplications[candidateApplications.length - 1];
+      candidateStatus = latestApp.status === 'APPLIED' ? 'Applied' :
+                       latestApp.status === 'REVIEWED' ? 'Reviewed' :
+                       latestApp.status === 'SHORTLISTED' ? 'Shortlisted' :
+                       latestApp.status === 'REJECTED' ? 'Rejected' :
+                       latestApp.status === 'ACCEPTED' ? 'Hired' : latestApp.status;
+    }
+
+    const matchesFilter = filterStatus === 'All' || 
+                          candidateStatus === filterStatus ||
+                          (filterStatus === 'Multiple Applications' && candidateApplications.length > 1);
     return matchesSearch && matchesFilter;
   });
 
-  const updateApplicantStatus = (id, newStatus) => {
-    setApplicants(prev =>
-      prev.map(applicant =>
-        applicant.id === id ? { ...applicant, status: newStatus } : applicant
-      )
-    );
-    if (selectedApplicant?.id === id) {
-      setSelectedApplicant({ ...selectedApplicant, status: newStatus });
+  const handleUpdateStatus = async (applicationId, newStatus) => {
+    try {
+      setError('');
+      
+      // Map frontend status to backend status
+      const backendStatus = newStatus === 'Applied' ? 'SUBMITTED' :
+                           newStatus === 'Reviewed' ? 'UNDER_REVIEW' :
+                           newStatus === 'Shortlisted' ? 'SHORTLISTED' :
+                           newStatus === 'Rejected' ? 'REJECTED' :
+                           newStatus === 'Hired' ? 'SELECTED' :
+                           newStatus === 'ACCEPTED' ? 'SELECTED' : newStatus.toUpperCase();
+
+      const result = await updateApplicationStatus(applicationId, backendStatus);
+      
+      if (result.success) {
+        // Reload data to get updated information
+        await loadData();
+        alert(`Application status updated to ${newStatus} successfully!`);
+      } else {
+        setError(result.error || 'Failed to update application status');
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      setError('Failed to update application status');
+    }
+  };
+
+  const handleHiringDecision = async (applicationId, decision) => {
+    try {
+      setError('');
+      
+      // Find the application to get vacancy details
+      const application = applications.find(app => app.id === applicationId);
+      if (!application) {
+        setError('Application not found');
+        return;
+      }
+
+      const decisionData = {
+        applicationId: applicationId,
+        decision: decision, // SELECTED, REJECTED, HOLD
+        notes: `${decision === 'SELECTED' ? 'Selected' : decision === 'REJECTED' ? 'Rejected' : 'On hold'} via applicants management.`
+      };
+
+      const result = await createHiringDecision(decisionData);
+      
+      if (result.success) {
+        // Also update application status if SELECTED or REJECTED
+        if (decision === 'SELECTED') {
+          await updateApplicationStatus(applicationId, 'SELECTED');
+        } else if (decision === 'REJECTED') {
+          await updateApplicationStatus(applicationId, 'REJECTED');
+        }
+        
+        await loadData();
+        alert(`Hiring decision "${decision}" created successfully!`);
+      } else {
+        setError(result.error || 'Failed to create hiring decision');
+      }
+    } catch (err) {
+      console.error('Error creating hiring decision:', err);
+      setError('Failed to create hiring decision');
     }
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-gray-500">Loading applicants...</div>;
+    return (
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">Loading applications...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Applicants</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Review and manage job applications and candidate profiles.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Candidates</h1>
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-700">
+              View all candidates (USER role) and their application status. ({filteredCandidates.length} candidates)
+            </p>
+            {(() => {
+              const multipleApplicants = candidates.filter(candidate => {
+                const candidateApplications = applications.filter(app => app.user?.id === candidate.id);
+                return candidateApplications.length > 1;
+              });
+              const totalApplications = applications.filter(app => app.user?.role === 'USER').length;
+              return multipleApplicants.length > 0 && (
+                <p className="text-xs text-blue-600">
+                  📊 {multipleApplicants.length} candidates applied to multiple positions • {totalApplications} total applications
+                </p>
+              );
+            })()}
+          </div>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={loadData}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </button>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+          <button 
+            onClick={() => setError('')}
+            className="ml-2 text-red-500 hover:text-red-700"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="mt-6 bg-white shadow rounded-lg p-6">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -75,11 +230,11 @@ function HRApplicants() {
               className="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-auto"
             >
               <option value="All">All Status</option>
+              <option value="Multiple Applications">Multiple Applications</option>
+              <option value="No Applications">No Applications</option>
               <option value="Applied">Applied</option>
               <option value="Reviewed">Reviewed</option>
               <option value="Shortlisted">Shortlisted</option>
-              <option value="Interview Scheduled">Interview Scheduled</option>
-              <option value="Interviewed">Interviewed</option>
               <option value="Hired">Hired</option>
               <option value="Rejected">Rejected</option>
             </select>
@@ -88,65 +243,156 @@ function HRApplicants() {
       </div>
 
       <div className="mt-6 bg-white shadow rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredApplicants.map(applicant => (
-                <tr key={applicant.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedApplicant(applicant)}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-700">
-                          {applicant.firstName[0]}{applicant.lastName[0]}
-                        </span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {applicant.firstName} {applicant.lastName}
-                        </div>
-                        <div className="text-sm text-gray-500">{applicant.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{applicant.position}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{applicant.experience} years</td>
-                  <td className="px-6 py-4"><StatusBadge status={applicant.status} /></td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {new Date(applicant.appliedDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 space-x-2">
-                    <button onClick={(e) => { e.stopPropagation(); setSelectedApplicant(applicant); }} className="text-blue-600 hover:text-blue-900">
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); updateApplicantStatus(applicant.id, 'Shortlisted'); }} className="text-green-600 hover:text-green-900">
-                      <UserCheck className="h-4 w-4" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); updateApplicantStatus(applicant.id, 'Rejected'); }} className="text-red-600 hover:text-red-900">
-                      <UserX className="h-4 w-4" />
-                    </button>
-                  </td>
+        {filteredCandidates.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-lg mb-4">
+              {searchTerm || filterStatus !== "All" ? 
+                'No candidates found matching your criteria' : 
+                'No candidates available'
+              }
+            </div>
+            {searchTerm || filterStatus !== "All" ? (
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterStatus('All');
+                }}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                Clear filters to see all candidates
+              </button>
+            ) : (
+              <p className="text-gray-500">All candidates with USER role will appear here.</p>
+            )}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latest Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredCandidates.map(candidate => {
+                  const candidateApplications = applications.filter(app => app.user?.id === candidate.id);
+                  const hasApplications = candidateApplications.length > 0;
+                  const latestApp = hasApplications ? candidateApplications[candidateApplications.length - 1] : null;
+                  
+                  let displayStatus = 'No Applications';
+                  if (hasApplications) {
+                    displayStatus = latestApp.status === 'APPLIED' ? 'Applied' :
+                                   latestApp.status === 'REVIEWED' ? 'Reviewed' :
+                                   latestApp.status === 'SHORTLISTED' ? 'Shortlisted' :
+                                   latestApp.status === 'REJECTED' ? 'Rejected' :
+                                   latestApp.status === 'ACCEPTED' ? 'Hired' : latestApp.status;
+                  }
+                  
+                  return (
+                    <tr key={candidate.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCandidate(candidate)}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-gray-700">
+                              {(candidate.firstName?.[0] || 'U')}{(candidate.lastName?.[0] || 'U')}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {candidate.firstName || 'Unknown'} {candidate.lastName || 'User'}
+                            </div>
+                            <div className="text-sm text-gray-500">{candidate.email || 'No email'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{candidate.skills || 'Not specified'}</td>
+                      <td className="px-6 py-4">
+                        {hasApplications ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                candidateApplications.length > 1 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {candidateApplications.length} Job{candidateApplications.length > 1 ? 's' : ''}
+                              </span>
+                              {candidateApplications.length > 1 && (
+                                <span className="text-xs text-blue-600 font-medium">Multiple Applications</span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500 space-y-0.5">
+                              {candidateApplications.slice(0, 2).map((app, idx) => {
+                                const vacancy = app.vacancy || {};
+                                return (
+                                  <div key={app.id}>
+                                    • {vacancy.title || 'Position not specified'}
+                                  </div>
+                                );
+                              })}
+                              {candidateApplications.length > 2 && (
+                                <div className="text-blue-600">
+                                  +{candidateApplications.length - 2} more...
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">No applications</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4"><StatusBadge status={displayStatus} /></td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {new Date(candidate.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 space-x-2">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setSelectedCandidate(candidate); }} 
+                          className="text-blue-600 hover:text-blue-900"
+                          title="View Details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        {hasApplications && (
+                          <>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleUpdateStatus(latestApp.id, 'Shortlisted'); }} 
+                              className="text-green-600 hover:text-green-900"
+                              title="Shortlist"
+                            >
+                              <UserCheck className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleUpdateStatus(latestApp.id, 'Rejected'); }} 
+                              className="text-red-600 hover:text-red-900"
+                              title="Reject"
+                            >
+                              <UserX className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {selectedApplicant && (
-        <ApplicantDetailModal
-          applicant={selectedApplicant}
-          onClose={() => setSelectedApplicant(null)}
-          onUpdateStatus={updateApplicantStatus}
+      {selectedCandidate && (
+        <CandidateDetailModal
+          candidate={selectedCandidate}
+          applications={applications.filter(app => app.user?.id === selectedCandidate.id)}
+          onClose={() => setSelectedCandidate(null)}
+          onUpdateStatus={handleUpdateStatus}
+          onHiringDecision={handleHiringDecision}
           vacancies={vacancies}
         />
       )}
@@ -157,10 +403,11 @@ function HRApplicants() {
 function StatusBadge({ status }) {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Applied': return 'bg-gray-100 text-gray-800';
-      case 'Reviewed': return 'bg-blue-100 text-blue-800';
+      case 'No Applications': return 'bg-gray-100 text-gray-600';
+      case 'Applied': return 'bg-blue-100 text-blue-800';
+      case 'Reviewed': return 'bg-purple-100 text-purple-800';
       case 'Shortlisted': return 'bg-yellow-100 text-yellow-800';
-      case 'Interview Scheduled': return 'bg-purple-100 text-purple-800';
+      case 'Interview Scheduled': return 'bg-indigo-100 text-indigo-800';
       case 'Interviewed': return 'bg-indigo-100 text-indigo-800';
       case 'Hired': return 'bg-green-100 text-green-800';
       case 'Rejected': return 'bg-red-100 text-red-800';
@@ -170,35 +417,168 @@ function StatusBadge({ status }) {
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>{status}</span>;
 }
 
-function ApplicantDetailModal({ applicant, onClose, onUpdateStatus, vacancies }) {
-  const vacancy = vacancies.find(v => v.id === applicant.vacancyId);
+function CandidateDetailModal({ candidate, applications, onClose, onUpdateStatus, onHiringDecision, vacancies }) {
+  const hasApplications = applications.length > 0;
+  const latestApp = hasApplications ? applications[applications.length - 1] : null;
+  
+  let displayStatus = 'No Applications';
+  if (hasApplications) {
+    displayStatus = latestApp.status === 'APPLIED' ? 'Applied' :
+                   latestApp.status === 'REVIEWED' ? 'Reviewed' :
+                   latestApp.status === 'SHORTLISTED' ? 'Shortlisted' :
+                   latestApp.status === 'REJECTED' ? 'Rejected' :
+                   latestApp.status === 'ACCEPTED' ? 'Hired' : latestApp.status;
+  }
+  
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
-          ✕
-        </button>
-        <h2 className="text-xl font-semibold mb-4">
-          {applicant.firstName} {applicant.lastName}
-        </h2>
-        <p className="text-sm text-gray-700 mb-1">Email: {applicant.email}</p>
-        <p className="text-sm text-gray-700 mb-1">Phone: {applicant.phone}</p>
-        <p className="text-sm text-gray-700 mb-1">Experience: {applicant.experience} years</p>
-        <p className="text-sm text-gray-700 mb-1">Position: {applicant.position}</p>
-        <p className="text-sm text-gray-700">Vacancy: {vacancy?.title}</p>
-        <div className="mt-4 flex gap-3">
-          <button
-            onClick={() => onUpdateStatus(applicant.id, 'Shortlisted')}
-            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-          >
-            Shortlist
+    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg relative max-h-[90vh] flex flex-col">
+        <div className="p-6 border-b border-gray-200 flex-shrink-0">
+          <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+            ✕
           </button>
-          <button
-            onClick={() => onUpdateStatus(applicant.id, 'Rejected')}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Reject
-          </button>
+          <h2 className="text-xl font-semibold">
+            {candidate.firstName || 'Unknown'} {candidate.lastName || 'User'}
+          </h2>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-2 mb-4">
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Email:</span> {candidate.email || 'Not provided'}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Phone:</span> {candidate.phoneNumber || 'Not provided'}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Skills:</span> {candidate.skills || 'Not specified'}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Designation:</span> {candidate.designation || 'Not specified'}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Location:</span> {candidate.city || 'Not specified'}, {candidate.state || 'Not specified'}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Application Status:</span> 
+            <span className="ml-2"><StatusBadge status={displayStatus} /></span>
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Registered:</span> {new Date(candidate.createdAt).toLocaleDateString()}
+          </p>
+          {candidate.summary && (
+            <div className="mt-3">
+              <p className="text-sm text-gray-700 font-medium">Summary:</p>
+              <div className="mt-1 p-3 bg-gray-50 rounded text-sm text-gray-700">
+                {candidate.summary}
+              </div>
+            </div>
+          )}
+          {hasApplications && (
+            <div className="mt-3">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm text-gray-700 font-medium">Applications ({applications.length}):</p>
+                {applications.length > 1 && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Multiple Jobs
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 space-y-2">
+                {applications.map(app => {
+                  const vacancy = app.vacancy || {};
+                  const appStatus = app.status === 'APPLIED' ? 'Applied' :
+                                  app.status === 'REVIEWED' ? 'Reviewed' :
+                                  app.status === 'SHORTLISTED' ? 'Shortlisted' :
+                                  app.status === 'REJECTED' ? 'Rejected' :
+                                  app.status === 'ACCEPTED' ? 'Hired' : app.status;
+                  return (
+                    <div key={app.id} className="p-3 bg-gray-50 rounded text-sm border-l-4 border-blue-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <span className="font-medium">{vacancy.title || 'Position not specified'}</span>
+                          {vacancy.department && (
+                            <div className="text-xs text-gray-600 mt-0.5">
+                              {vacancy.department} {vacancy.location && ` • ${vacancy.location}`}
+                            </div>
+                          )}
+                        </div>
+                        <StatusBadge status={appStatus} />
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 mb-3 flex justify-between">
+                        <span>Applied: {app.createdAt || app.applicationDate 
+                          ? new Date(app.createdAt || app.applicationDate).toLocaleDateString() 
+                          : 'Date not available'}</span>
+                        {app.coverLetter && (
+                          <span className="text-blue-600">📄 Has cover letter</span>
+                        )}
+                      </div>
+
+                      {/* Application Status buttons */}
+                      <div className="mb-2">
+                        <p className="text-xs text-gray-600 mb-1">Application Status:</p>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onUpdateStatus(app.id, 'UNDER_REVIEW'); }}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 disabled:opacity-50"
+                            disabled={app.status === 'UNDER_REVIEW'}
+                          >
+                            Mark Review
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onUpdateStatus(app.id, 'SHORTLISTED'); }}
+                            className="bg-yellow-500 text-white px-2 py-1 rounded text-xs hover:bg-yellow-600 disabled:opacity-50"
+                            disabled={app.status === 'SHORTLISTED'}
+                          >
+                            Shortlist
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Hiring Decision buttons (Decision enum) */}
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Hiring Decision:</p>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onHiringDecision(app.id, 'SELECTED'); }}
+                            className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50 border border-green-600"
+                            title="Make hiring decision: SELECTED"
+                          >
+                            ✓ SELECTED
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onHiringDecision(app.id, 'REJECTED'); }}
+                            className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50 border border-red-600"
+                            title="Make hiring decision: REJECTED"
+                          >
+                            ✗ REJECTED
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onHiringDecision(app.id, 'HOLD'); }}
+                            className="bg-yellow-600 text-white px-2 py-1 rounded text-xs hover:bg-yellow-700 disabled:opacity-50 border border-yellow-600"
+                            title="Make hiring decision: HOLD"
+                          >
+                            ⏸ HOLD
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+        {hasApplications && applications.length > 1 && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800 font-medium">
+              💡 Action buttons are available for each individual application above
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              You can manage each job application separately using the buttons in each application card.
+            </p>
+          </div>
+        )}
         </div>
       </div>
     </div>

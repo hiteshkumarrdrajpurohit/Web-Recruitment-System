@@ -1,8 +1,12 @@
 package com.sunbeam.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +21,7 @@ import com.sunbeam.dto.UpdateUserDTO;
 import com.sunbeam.dto.UserDTO;
 import com.sunbeam.dto.VacancyDTO;
 import com.sunbeam.entity.User;
+import com.sunbeam.entity.types.UserRole;
 
 import lombok.AllArgsConstructor;
 
@@ -30,32 +35,40 @@ public class UserServiceImpl implements UserService {
 	
 	private final ModelMapper modelMapper;
 	
+	private final PasswordEncoder passwordEncoder;
+	
 	@Override
 	public UserDTO signIn(SignInDTO dto) {
-		// TODO Auto-generated method stub
+		// Find user by email
+		User entity = userDao.findByEmail(dto.getEmail())
+				.orElseThrow(() -> new AuthenticationFailureException("Invalid email or Password"));
 		
-		//1. invoke dao's method
-		
-		User entity = 
-				userDao.findByEmailAndPassword(dto.getEmail(), dto.getPassword())
-				.orElseThrow(()-> new AuthenticationFailureException("Invalid email or Password") );
+		// Check if password matches
+		if (!passwordEncoder.matches(dto.getPassword(), entity.getPassword())) {
+			throw new AuthenticationFailureException("Invalid email or Password");
+		}
 		
 		return modelMapper.map(entity, UserDTO.class);
-		
 	}
 
 	@Override
 	public UserDTO signUp(SignUpDTO dto) {
-		// TODO Auto-generated method stub
-		if(userDao.existsByEmail( dto.getEmail())) {
-		 
+		// Check if email already exists
+		if(userDao.existsByEmail(dto.getEmail())) {
 			throw new InvalidInputException("Email Already Exist");
 		}
 		
-		User entity = userDao.save(modelMapper.map(dto, User.class));
+		// Map DTO to entity
+		User entity = modelMapper.map(dto, User.class);
 		
-	    
-		return modelMapper.map(entity, UserDTO.class);
+		// Encode password before saving
+		entity.setPassword(passwordEncoder.encode(dto.getPassword()));
+		
+		// Save user
+		User savedUser = userDao.save(entity);
+		
+		// Return mapped DTO without password
+		return modelMapper.map(savedUser, UserDTO.class);
 	}
 
 	@Override
@@ -79,6 +92,28 @@ public class UserServiceImpl implements UserService {
 		modelMapper.map(dto, entity);
 		
 		return new ApiResponse("Updated User details ....");
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User user = userDao.findByEmail(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+		return user;
+	}
+
+	@Override
+	public UserDTO getUserByEmail(String email) {
+		User user = userDao.findByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+		return modelMapper.map(user, UserDTO.class);
+	}
+
+	@Override
+	public List<UserDTO> getAllCandidates() {
+		List<User> candidates = userDao.findByRole(UserRole.USER);
+		return candidates.stream()
+				.map(user -> modelMapper.map(user, UserDTO.class))
+				.collect(Collectors.toList());
 	}
 
 }

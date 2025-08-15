@@ -17,15 +17,15 @@ public class UpdateUserDTO {
 
 	private  String city;
 	    
-	private String State;
- 
-	private Long ZipCode;
+		private String state;
+
+	private Long zipCode;
 	
-	private String Country;
+	private String country;
 
     private String orgName;
 
-	private String Designation;
+	private String designation;
 	
     private LocalDate startDate;
 	  	   

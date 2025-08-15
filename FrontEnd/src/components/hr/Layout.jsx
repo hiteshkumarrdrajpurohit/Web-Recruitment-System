@@ -24,7 +24,6 @@ const navigation = [
   { name: 'Applicants', path: 'applicants', icon: Users },
   { name: 'Interviews', path: 'interviews', icon: Calendar },
   { name: 'Hiring', path: 'hiring', icon: UserCheck },
-  { name: 'Reports', path: 'reports', icon: BarChart3 },
   { name: 'Settings', path: 'settings', icon: Settings },
 ];
 

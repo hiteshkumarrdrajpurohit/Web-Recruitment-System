@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.sunbeam.entity.User;
 import com.sunbeam.entity.Vacancy;
+import com.sunbeam.entity.types.UserRole;
 
 public interface UserDao extends JpaRepository<User, Long> {
 
@@ -18,6 +19,7 @@ public interface UserDao extends JpaRepository<User, Long> {
 
 	Optional<User> findByEmailAndPassword(String email, String password);
 	
-	
+	// Find users by role
+	List<User> findByRole(UserRole role);
 	
 }

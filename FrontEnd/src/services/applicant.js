@@ -1,163 +1,179 @@
 import axios from "axios";
 import { config } from "../config";
+import { getAuthHeaders } from "./auth";
 
-export async function updateProfile(
-  firstName,
-  lastName,
-  email,
-  password,
-  dateOfBirth,
-  phoneNumber,
-  skills,
-  houseNo,
-  streetNo,
-  landmark,
-  area,
-  city,
-  state,
-  zip,
-  country,
-  nameOfOrganization,
-  startDate,
-  endDate,
-  designation,
-  summary
-) {
+/**
+ * Applicant service functions
+ * Handles applicant-specific operations like profile, job applications, etc.
+ */
+
+/**
+ * Update user profile
+ */
+export async function updateProfile(profileData) {
   try {
-    //create the url for the server
-    const url = `${config.serverURL}/user/profile`;
-    const token = sessionStorage.getItem("token");
-
-    //create the request body
-    const body = {
-      firstName,
-      lastName,
-      email,
-      password,
-      dateOfBirth,
-      phoneNumber,
-      skills,
-      houseNo,
-      streetNo,
-      landmark,
-      area,
-      city,
-      state,
-      zip,
-      country,
-      nameOfOrganization,
-      startDate,
-      endDate,
-      designation,
-      summary,
-    };
-    //send the request to the server and update the user
-    const response = await axios.put(url, body, {
-      headers: { token },
+    const url = `${config.serverURL}/users/profile`;
+    const response = await axios.put(url, profileData, {
+      headers: getAuthHeaders(),
     });
-    if (response.status == 200) {
-      return response.data; //return the data from the response
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
   } catch (ex) {
     console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Profile update failed" };
   }
 }
+
+/**
+ * Get user profile
+ */
 export async function getProfile() {
   try {
-    const url = `${config.serverURL}/user/profile`;
-    const token = sessionStorage.getItem("token");
+    const url = `${config.serverURL}/users/profile`;
     const response = await axios.get(url, {
-      headers: { token },
+      headers: getAuthHeaders(),
     });
-    if (response.status == 200) {
-      return response.data;
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
   } catch (ex) {
     console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch profile" };
   }
 }
 
-export async function getAllJobsFromServer(searchTerm) {
+/**
+ * Get all available job vacancies
+ */
+export async function getAllJobs(searchTerm = "") {
   try {
-    let url = `${config.serverURL}/jobs`;
+    let url = `${config.serverURL}/vacancies`;
     if (searchTerm.length > 0) {
-      url += "?searchTerm=" + searchTerm;
+      url += `/search?title=${encodeURIComponent(searchTerm)}`;
     }
-    const token = sessionStorage.getItem("token");
-    const response = await axios.get(url, {
-      headers: { token },
-    });
-    if (response.status == 200) {
-      return response.data;
+    
+    const response = await axios.get(url);
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
   } catch (ex) {
     console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch jobs" };
   }
 }
-const API_BASE_URL = "http://your-api-base-url.com/api";
 
-export const fetchVacancies = async () => {
+/**
+ * Get job vacancy by ID
+ */
+export async function getJobById(jobId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch vacancies");
+    const url = `${config.serverURL}/vacancies/${jobId}`;
+    const response = await axios.get(url);
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching vacancies:", error);
-    throw error;
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch job details" };
   }
-};
+}
 
-export const createVacancy = async (vacancyData) => {
+/**
+ * Apply for a job
+ */
+export async function applyForJob(vacancyId, coverLetter = "") {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(vacancyData),
+    const url = `${config.serverURL}/applications/apply`;
+    const params = new URLSearchParams({
+      vacancyId: vacancyId.toString(),
+      ...(coverLetter && { coverLetter })
     });
-    if (!response.ok) {
-      throw new Error("Failed to create vacancy");
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error creating vacancy:", error);
-    throw error;
-  }
-};
-
-export const updateVacancy = async (id, vacancyData) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(vacancyData),
+    
+    const response = await axios.post(`${url}?${params}`, {}, {
+      headers: getAuthHeaders(),
     });
-    if (!response.ok) {
-      throw new Error("Failed to update vacancy");
+    
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
-    return await response.json();
-  } catch (error) {
-    console.error("Error updating vacancy:", error);
-    throw error;
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to apply for job" };
   }
-};
+}
 
-export const deleteVacancy = async (id) => {
+/**
+ * Get user's applications
+ */
+export async function getMyApplications() {
   try {
-    const response = await fetch(`${API_BASE_URL}/vacancies/${id}`, {
-      method: "DELETE",
+    const url = `${config.serverURL}/applications/my`;
+    const response = await axios.get(url, {
+      headers: getAuthHeaders(),
     });
-    if (!response.ok) {
-      throw new Error("Failed to delete vacancy");
+    if (response.status === 200) {
+      return { success: true, data: response.data };
     }
-    return true;
-  } catch (error) {
-    console.error("Error deleting vacancy:", error);
-    throw error;
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch applications" };
   }
-};
+}
+
+/**
+ * Check if user has already applied for a specific vacancy
+ */
+export async function hasAppliedForVacancy(vacancyId) {
+  try {
+    const url = `${config.serverURL}/applications/check-applied/${vacancyId}`;
+    const response = await axios.get(url, {
+      headers: getAuthHeaders(),
+    });
+    if (response.status === 200) {
+      return { success: true, data: response.data };
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to check application status" };
+  }
+}
+
+/**
+ * Get dashboard statistics for applicant
+ */
+export async function getApplicantDashboardStats() {
+  try {
+    const url = `${config.serverURL}/dashboard/applicant/stats`;
+    const response = await axios.get(url, {
+      headers: getAuthHeaders(),
+    });
+    if (response.status === 200) {
+      return { success: true, data: response.data };
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch dashboard stats" };
+  }
+}
+
+/**
+ * Search jobs by criteria
+ */
+export async function searchJobs(title, department, location) {
+  try {
+    const url = `${config.serverURL}/vacancies/search`;
+    const params = new URLSearchParams();
+    if (title) params.append('title', title);
+    if (department) params.append('department', department);
+    if (location) params.append('location', location);
+    
+    const response = await axios.get(`${url}?${params}`);
+    if (response.status === 200) {
+      return { success: true, data: response.data };
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to search jobs" };
+  }
+}

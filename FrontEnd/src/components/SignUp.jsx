@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiUser } from 'react-icons/fi';
+import { handleSignUp as authSignUp } from '../services/auth';
 
 const BG_IMG = "../assets/bg.jpg";
 function SignUp({ onSwitchToSignIn, onSignUp }) {
 
-    const role = 'applicant';
+    const [role, setRole] = useState('applicant'); // Make role dynamic
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
     const [phone, setPhone] = useState('');
@@ -17,8 +18,10 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSignUp = (e) => {
+    const handleSignUp = async (e) => {
         e.preventDefault();
+        setError('');
+        
         if (!firstname || !lastname || !gender || !dob || !phone || !email || !password || !confirmPassword) {
             setError('Please fill all fields.');
             return;
@@ -27,8 +30,32 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
             setError('Passwords do not match.');
             return;
         }
-        setError('');
-        if (onSignUp) onSignUp(role);
+
+        try {
+            // Create signup data object matching backend DTO
+            const signupData = {
+                firstName: firstname,
+                lastName: lastname,
+                email: email,
+                password: password,
+                phoneNumber: phone,
+                dateOfBirth: dob,
+                role: role === 'applicant' ? 'USER' : 'HRMANAGER' // Map frontend role to backend role
+            };
+
+            const result = await authSignUp(signupData);
+            
+            if (result.success) {
+                // Show success message and switch to sign in
+                alert('Account created successfully! Please sign in.');
+                if (onSwitchToSignIn) onSwitchToSignIn();
+            } else {
+                setError(result.error || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            setError('Registration failed. Please try again.');
+        }
     };
 
 
@@ -55,7 +82,9 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
                         <span className="text-2xl font-bold text-white"> <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M16 3v4M8 3v4" /></svg> </span>
                     </div>
                     <h2 className="text-3xl font-bold mb-2 text-white">Create an Account</h2>
-                    <p className="text-gray-200 mb-4">Sign up to start your job search </p>
+                    <p className="text-gray-200 mb-4">
+                      {role === 'applicant' ? 'Sign up to start your job search' : 'Sign up to manage job postings and recruitment'}
+                    </p>
 
                 </div>
                 <form
@@ -63,21 +92,29 @@ function SignUp({ onSwitchToSignIn, onSignUp }) {
           onSubmit={handleSignUp}
         >
 
-          {/* Role Toggle (Job Seeker only) */}
-          <div className="flex mb-2 rounded-lg overflow-hidden border border-gray-200">
+          {/* Role Toggle */}
+          <div className="flex mb-4 rounded-lg overflow-hidden border border-gray-200">
             <button
               type="button"
-              className={`flex-1 py-2 text-sm font-semibold bg-blue-50 text-blue-700 cursor-default`}
-              disabled
+              className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${
+                role === 'applicant' 
+                  ? 'bg-blue-50 text-blue-700 border-r border-gray-200' 
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+              onClick={() => setRole('applicant')}
             >
-              Applicant
+              🔍 Job Seeker
             </button>
             <button
               type="button"
-              className={`flex-1 py-2 text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed`}
-              disabled
+              className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${
+                role === 'hr' 
+                  ? 'bg-blue-50 text-blue-700 border-l border-gray-200' 
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+              onClick={() => setRole('hr')}
             >
-              HR Manager
+              🏢 HR Manager
             </button>
           </div>
           <div>

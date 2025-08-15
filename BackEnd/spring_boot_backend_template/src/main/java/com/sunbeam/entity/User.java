@@ -3,6 +3,12 @@ package com.sunbeam.entity;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+
 
 import com.sunbeam.entity.types.UserRole;
 
@@ -27,7 +33,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 
-public class User  extends BaseEntity {
+public class User  extends BaseEntity implements UserDetails {
        
     @Column(unique = true, nullable = false)
     private String email;
@@ -58,17 +64,17 @@ public class User  extends BaseEntity {
 
     private  String city;
     
-    private String State;
+    private String state;
 
-    private String Country;
+    private String country;
      
-    private Long ZipCode;
+    private Long zipCode;
 
    
     private String orgName;
 
    
-    private String Designation;
+    private String designation;
 
   
     private LocalDate startDate;
@@ -87,10 +93,19 @@ public class User  extends BaseEntity {
 
    private List<Application> ApplicationList = new ArrayList<>();
 
-  
-
    @OneToOne(mappedBy = "user", 
 			cascade = CascadeType.ALL, orphanRemoval = true)
     private HrManager hrManger;
+
+
+    @Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_" + this.role.name());
+		return authorities;
+	}
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
 
 }

@@ -1,35 +1,124 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./ApplicantNavbar";
-import { mockApplicants, mockVacancies, mockInterviews, mockUser } from '../../data/mockData';
+import { getProfile, updateProfile } from '../../services/applicant';
 
 export default function ApplicantProfile() {
-  // Use the first applicant as the default profile (or add logic to select by user)
-  const [profile, setProfile] = useState(mockApplicants[0]);
-
-  const [form, setForm] = useState({
-    ...profile,
-    skills: profile.skills.join(", "),
-    dateOfBirth: profile.dateOfBirth,
-    startDate: profile.startDate,
-    endDate: profile.endDate,
-  });
-
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState({});
   const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const result = await getProfile();
+      
+      if (result.success) {
+        const profileData = result.data;
+        setProfile(profileData);
+        
+        // Initialize form with profile data
+        setForm({
+          firstName: profileData.firstName || '',
+          lastName: profileData.lastName || '',
+          email: profileData.email || '',
+          phoneNumber: profileData.phoneNumber || '',
+          dateOfBirth: profileData.dateOfBirth || '',
+          skills: profileData.skills || '',
+          address: profileData.address || '',
+          city: profileData.city || '',
+          state: profileData.state || '',
+          country: profileData.country || '',
+          zipCode: profileData.zipCode || '',
+          orgName: profileData.orgName || '',
+          designation: profileData.designation || '',
+          startDate: profileData.startDate || '',
+          endDate: profileData.endDate || '',
+          summary: profileData.summary || ''
+        });
+      } else {
+        setError(result.error || 'Failed to load profile');
+      }
+    } catch (err) {
+      console.error('Error loading profile:', err);
+      setError('Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    setProfile({
-      ...form,
-      skills: form.skills.split(",").map((s) => s.trim()),
-    });
-    setEditing(false);
+    setError('');
+
+    try {
+      const result = await updateProfile(form);
+      
+      if (result.success) {
+        // Reload profile to get updated data
+        await loadProfile();
+        setEditing(false);
+        alert('Profile updated successfully!');
+      } else {
+        setError(result.error || 'Failed to update profile');
+      }
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError('Failed to update profile');
+    }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={loadProfile}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No profile data
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">No profile data found</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,8 +129,14 @@ export default function ApplicantProfile() {
       <div className="max-w-4xl mx-auto mt-2">
         <div className="bg-white rounded-xl shadow p-8 flex flex-col items-center">
           <div className="h-24 w-24 rounded-full bg-blue-200 flex items-center justify-center text-4xl font-bold text-blue-700 mb-4">
-            {profile.firstName[0]}
+            {profile.firstName ? profile.firstName[0].toUpperCase() : 'U'}
           </div>
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 w-full">
+              {error}
+            </div>
+          )}
 
           {editing ? (
             <form className="w-full" onSubmit={handleSave}>
@@ -130,44 +225,14 @@ export default function ApplicantProfile() {
                     Address Information
                   </h3>
                   <div className="mb-2">
-                    <label className="font-semibold block mb-1">House No</label>
-                    <input
-                      name="houseNo"
-                      value={form.houseNo}
+                    <label className="font-semibold block mb-1">Address</label>
+                    <textarea
+                      name="address"
+                      value={form.address}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border rounded"
-                      required
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="font-semibold block mb-1">
-                      Street No
-                    </label>
-                    <input
-                      name="streetNo"
-                      value={form.streetNo}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
-                      required
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="font-semibold block mb-1">Landmark</label>
-                    <input
-                      name="landmark"
-                      value={form.landmark}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="font-semibold block mb-1">Area</label>
-                    <input
-                      name="area"
-                      value={form.area}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded"
-                      required
+                      rows="3"
+                      placeholder="Enter your full address"
                     />
                   </div>
                   <div className="mb-2">
@@ -193,11 +258,10 @@ export default function ApplicantProfile() {
                   <div className="mb-2">
                     <label className="font-semibold block mb-1">ZIP Code</label>
                     <input
-                      name="zip"
-                      value={form.zip}
+                      name="zipCode"
+                      value={form.zipCode}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border rounded"
-                      required
                     />
                   </div>
                   <div className="mb-2">
@@ -219,11 +283,10 @@ export default function ApplicantProfile() {
                       Organization Name
                     </label>
                     <input
-                      name="nameOfOrganization"
-                      value={form.nameOfOrganization}
+                      name="orgName"
+                      value={form.orgName}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border rounded"
-                      required
                     />
                   </div>
                   <div className="mb-2">
@@ -319,14 +382,18 @@ export default function ApplicantProfile() {
                   <div className="mb-4">
                     <span className="font-semibold block mb-2">Skills:</span>
                     <div className="flex flex-wrap gap-2">
-                      {profile.skills.map((skill, i) => (
-                        <span
-                          key={i}
-                          className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+                      {profile.skills ? (
+                        profile.skills.split(',').map((skill, i) => (
+                          <span
+                            key={i}
+                            className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded"
+                          >
+                            {skill.trim()}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-500">No skills added</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -338,23 +405,21 @@ export default function ApplicantProfile() {
                   </h3>
                   <div className="mb-2">
                     <span className="font-semibold">Address:</span>{" "}
-                    {profile.houseNo}, {profile.streetNo},{" "}
-                    {profile.landmark && `${profile.landmark}, `}
-                    {profile.area}
+                    {profile.address || 'Not provided'}
                   </div>
                   <div className="mb-2">
-                    <span className="font-semibold">City:</span> {profile.city}
+                    <span className="font-semibold">City:</span> {profile.city || 'Not provided'}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">State:</span>{" "}
-                    {profile.state}
+                    {profile.state || 'Not provided'}
                   </div>
                   <div className="mb-2">
-                    <span className="font-semibold">ZIP:</span> {profile.zip}
+                    <span className="font-semibold">ZIP:</span> {profile.zipCode || 'Not provided'}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Country:</span>{" "}
-                    {profile.country}
+                    {profile.country || 'Not provided'}
                   </div>
                 </div>
 
@@ -365,19 +430,19 @@ export default function ApplicantProfile() {
                   </h3>
                   <div className="mb-2">
                     <span className="font-semibold">Organization:</span>{" "}
-                    {profile.nameOfOrganization}
+                    {profile.orgName || 'Not provided'}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Designation:</span>{" "}
-                    {profile.designation}
+                    {profile.designation || 'Not provided'}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Duration:</span>{" "}
-                    {profile.startDate} to {profile.endDate}
+                    {profile.startDate || 'Not provided'} to {profile.endDate || 'Not provided'}
                   </div>
                   <div className="mb-2">
                     <span className="font-semibold">Summary:</span>{" "}
-                    {profile.summary}
+                    {profile.summary || 'Not provided'}
                   </div>
                 </div>
               </div>

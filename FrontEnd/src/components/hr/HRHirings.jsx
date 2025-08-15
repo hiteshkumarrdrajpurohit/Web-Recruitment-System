@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserCheck, 
   UserX, 
@@ -11,35 +11,126 @@ import {
   AlertCircle,
   CheckCircle,
   Star,
-  Send
+  Send,
+  RefreshCw
 } from 'lucide-react';
-import { mockApplicants, mockVacancies, mockInterviews, mockHiringDecisions } from '../../data/mockData.js';
+import { getAllHirings, getAllApplications, getAllVacancies, getAllInterviews, createHiringDecision } from '../../services/hr';
 
  function HRHirings() {
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [selectedApplication, setSelectedApplication] = useState(null);
   const [showDecisionModal, setShowDecisionModal] = useState(false);
-  const [hiringDecisions, setHiringDecisions] = useState(mockHiringDecisions);
+  const [hiringDecisions, setHiringDecisions] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [vacancies, setVacancies] = useState([]);
+  const [interviews, setInterviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Get applicants ready for hiring decision (interviewed status)
-  const candidatesForDecision = mockApplicants.filter(a => 
-    a.status === 'Interviewed' || a.status === 'Shortlisted'
-  );
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // Get recently hired candidates
-  const recentHires = mockApplicants.filter(a => a.status === 'Hired');
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Load all necessary data in parallel
+      const [hiringsResult, applicationsResult, vacanciesResult, interviewsResult] = await Promise.all([
+        getAllHirings(),
+        getAllApplications(),
+        getAllVacancies(),
+        getAllInterviews()
+      ]);
 
-  // Get rejected candidates
-  const rejectedCandidates = mockApplicants.filter(a => a.status === 'Rejected');
+      if (hiringsResult.success) {
+        setHiringDecisions(hiringsResult.data);
+      } else {
+        setError(hiringsResult.error || 'Failed to load hiring decisions');
+      }
 
-  const makeHiringDecision = (decision) => {
-    const newDecision = {
-      ...decision,
-      id: Date.now().toString()
-    };
-    setHiringDecisions([...hiringDecisions, newDecision]);
-    setShowDecisionModal(false);
-    setSelectedApplicant(null);
+      if (applicationsResult.success) {
+        setApplications(applicationsResult.data);
+      } else {
+        console.warn('Failed to load applications:', applicationsResult.error);
+      }
+
+      if (vacanciesResult.success) {
+        setVacancies(vacanciesResult.data);
+      } else {
+        console.warn('Failed to load vacancies:', vacanciesResult.error);
+      }
+
+      if (interviewsResult.success) {
+        setInterviews(interviewsResult.data);
+      } else {
+        console.warn('Failed to load interviews:', interviewsResult.error);
+      }
+
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Get applications ready for hiring decision (completed interviews)
+  const candidatesForDecision = applications.filter(app => {
+    const user = app.user || {};
+    // Only consider applications from users with 'USER' role (exclude HR managers)
+    if (user.role !== 'USER') {
+      return false;
+    }
+    
+    // Applications that have completed interviews and are ready for hiring decision
+    const hasCompletedInterviews = interviews.some(interview => 
+      interview.application?.id === app.id && interview.status === 'COMPLETED'
+    );
+    return hasCompletedInterviews && (app.status === 'SHORTLISTED' || app.status === 'UNDER_REVIEW' || app.status === 'INTERVIEWED');
+  });
+
+  // Get recently hired candidates (applications with SELECTED status)
+  const recentHires = applications.filter(a => {
+    const user = a.user || {};
+    return user.role === 'USER' && a.status === 'SELECTED';
+  });
+
+  // Get rejected candidates (applications with REJECTED status) 
+  const rejectedCandidates = applications.filter(a => {
+    const user = a.user || {};
+    return user.role === 'USER' && a.status === 'REJECTED';
+  });
+
+  const makeHiringDecision = async (decision) => {
+    try {
+      setError('');
+      const result = await createHiringDecision(decision);
+      
+      if (result.success) {
+        await loadData(); // Reload to get updated data
+    setShowDecisionModal(false);
+        setSelectedApplication(null);
+        alert('Hiring decision submitted successfully!');
+      } else {
+        setError(result.error || 'Failed to submit hiring decision');
+      }
+    } catch (err) {
+      console.error('Error making hiring decision:', err);
+      setError('Failed to submit hiring decision');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">Loading hiring data...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -50,61 +141,31 @@ import { mockApplicants, mockVacancies, mockInterviews, mockHiringDecisions } fr
             Make hiring decisions and manage the final stages of recruitment.
           </p>
         </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-4">
-        <SummaryCard
-          title="Pending Decisions"
-          value={candidatesForDecision.length}
-          icon={Clock}
-          color="bg-yellow-500"
-          description="Candidates awaiting decision"
-        />
-        <SummaryCard
-          title="Recent Hires"
-          value={recentHires.length}
-          icon={UserCheck}
-          color="bg-green-500"
-          description="Successfully hired"
-        />
-        <SummaryCard
-          title="Rejected"
-          value={rejectedCandidates.length}
-          icon={UserX}
-          color="bg-red-500"
-          description="Not selected"
-        />
-       
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* Candidates for Decision */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Candidates for Decision</h3>
-            <p className="text-sm text-gray-600">Review and make hiring decisions</p>
-          </div>
-          <div className="p-6">
-            {candidatesForDecision.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No candidates pending decision</p>
-            ) : (
-              <div className="space-y-4">
-                {candidatesForDecision.map((applicant) => (
-                  <CandidateCard 
-                    key={applicant.id} 
-                    applicant={applicant}
-                    onMakeDecision={() => {
-                      setSelectedApplicant(applicant);
-                      setShowDecisionModal(true);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={loadData}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </button>
         </div>
+      </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+          <button 
+            onClick={() => setError('')}
+            className="ml-2 text-red-500 hover:text-red-700"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <div className="mt-8">
         {/* Recent Hiring Decisions */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -116,59 +177,27 @@ import { mockApplicants, mockVacancies, mockInterviews, mockHiringDecisions } fr
               <p className="text-gray-500 text-center py-8">No recent decisions</p>
             ) : (
               <div className="space-y-4">
-                {hiringDecisions.map((decision) => {
-                  const applicant = mockApplicants.find(a => a.id === decision.applicantId);
-                  const vacancy = mockVacancies.find(v => v.id === decision.vacancyId);
-                  return (
-                    <DecisionCard 
-                      key={decision.id} 
-                      decision={decision}
-                      applicant={applicant}
-                      vacancy={vacancy}
-                    />
-                  );
-                })}
+                {hiringDecisions.map((decision) => (
+                  <DecisionCard 
+                    key={decision.id} 
+                    decision={decision}
+                  />
+                ))}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Recent Hires Overview */}
-      <div className="mt-8 bg-white shadow-sm rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Hires</h3>
-          <p className="text-sm text-gray-600">Successfully onboarded candidates</p>
-        </div>
-        <div className="p-6">
-          {recentHires.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No recent hires</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {recentHires.map((hire) => {
-                const vacancy = mockVacancies.find(v => v.id === hire.vacancyId);
-                const decision = hiringDecisions.find(d => d.applicantId === hire.id);
-                return (
-                  <HireCard 
-                    key={hire.id} 
-                    applicant={hire}
-                    vacancy={vacancy}
-                    decision={decision}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Hiring Decision Modal */}
-      {showDecisionModal && selectedApplicant && (
+      {showDecisionModal && selectedApplication && (
         <HiringDecisionModal
-          applicant={selectedApplicant}
+          application={selectedApplication}
+          interviews={interviews.filter(i => i.application?.id === selectedApplication.id)}
           onClose={() => {
             setShowDecisionModal(false);
-            setSelectedApplicant(null);
+            setSelectedApplication(null);
           }}
           onDecision={makeHiringDecision}
         />
@@ -200,79 +229,42 @@ function SummaryCard({ title, value, icon: Icon, color, description }) {
   );
 }
 
-function CandidateCard({ applicant, onMakeDecision }) {
-  const vacancy = mockVacancies.find(v => v.id === applicant.vacancyId);
-  // No average rating or stars
-  return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-sm font-bold text-white">
-              {applicant.firstName[0]}{applicant.lastName[0]}
-            </span>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900">
-              {applicant.firstName} {applicant.lastName}
-            </h4>
-            <p className="text-sm text-gray-600">{vacancy?.title}</p>
-            <p className="text-xs text-gray-500">{applicant.experience} years experience</p>
-          </div>
-        </div>
-      </div>
 
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center text-sm text-gray-600">
-          <Mail className="h-4 w-4 mr-2" />
-          {applicant.email}
-        </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <Phone className="h-4 w-4 mr-2" />
-          {applicant.phone}
-        </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="h-4 w-4 mr-2" />
-          Applied: {new Date(applicant.appliedDate).toLocaleDateString()}
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <p className="text-sm text-gray-700">{applicant.notes}</p>
-      </div>
-
-      <div className="flex space-x-2">
-        <button
-          onClick={onMakeDecision}
-          className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
-        >
-          <UserCheck className="h-4 w-4 mr-1" />
-          Make Decision
-        </button>
-        <button className="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-          <FileText className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function DecisionCard({ decision, applicant, vacancy }) {
-  const getDecisionColor = (decision) => {
-    switch (decision) {
-      case 'Hire': return 'text-green-600 bg-green-50 border-green-200';
-      case 'Reject': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Hold': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+function DecisionCard({ decision }) {
+  const application = decision.application || {};
+  const user = application.user || {};
+  const vacancy = application.vacancy || {};
+  
+  const getDecisionColor = (decisionType) => {
+    switch (decisionType) {
+      case 'HIRE':
+      case 'SELECTED': return 'text-green-600 bg-green-50 border-green-200';
+      case 'REJECT':
+      case 'REJECTED': return 'text-red-600 bg-red-50 border-red-200';
+      case 'HOLD': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
-  const getDecisionIcon = (decision) => {
-    switch (decision) {
-      case 'Hire': return <CheckCircle className="h-4 w-4" />;
-      case 'Reject': return <UserX className="h-4 w-4" />;
-      case 'Hold': return <Clock className="h-4 w-4" />;
+  const getDecisionIcon = (decisionType) => {
+    switch (decisionType) {
+      case 'HIRE':
+      case 'SELECTED': return <CheckCircle className="h-4 w-4" />;
+      case 'REJECT':
+      case 'REJECTED': return <UserX className="h-4 w-4" />;
+      case 'HOLD': return <Clock className="h-4 w-4" />;
       default: return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
+  const getDecisionDisplay = (decisionType) => {
+    switch (decisionType) {
+      case 'HIRE': 
+      case 'SELECTED': return 'Hire';
+      case 'REJECT':
+      case 'REJECTED': return 'Reject';
+      case 'HOLD': return 'Hold';
+      default: return decisionType;
     }
   };
 
@@ -281,19 +273,19 @@ function DecisionCard({ decision, applicant, vacancy }) {
       <div className="flex items-center justify-between mb-3">
         <div>
           <h4 className="font-semibold text-gray-900">
-            {applicant?.firstName} {applicant?.lastName}
+            {user.firstName || 'Unknown'} {user.lastName || 'User'}
           </h4>
-          <p className="text-sm text-gray-600">{vacancy?.title}</p>
+          <p className="text-sm text-gray-600">{vacancy.title || 'Position not specified'}</p>
         </div>
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getDecisionColor(decision.decision)}`}>
           {getDecisionIcon(decision.decision)}
-          <span className="ml-1">{decision.decision}</span>
+          <span className="ml-1">{getDecisionDisplay(decision.decision)}</span>
         </span>
       </div>
 
-      <p className="text-sm text-gray-700 mb-3">{decision.reason}</p>
+      <p className="text-sm text-gray-700 mb-3">{decision.reason || 'No reason provided'}</p>
 
-      {decision.decision === 'Hire' && decision.salaryOffered && (
+      {decision.decision === 'HIRE' && decision.salaryOffered && (
         <div className="flex items-center text-sm text-gray-600 mb-2">
           Salary Offered: ₹{decision.salaryOffered.toLocaleString('en-IN')}
         </div>
@@ -307,26 +299,31 @@ function DecisionCard({ decision, applicant, vacancy }) {
       )}
 
       <div className="text-xs text-gray-500">
-        Decision made on {new Date(decision.decidedDate).toLocaleDateString()}
+        Decision made on {decision.createdAt || decision.decidedDate 
+          ? new Date(decision.createdAt || decision.decidedDate).toLocaleDateString()
+          : 'Date not available'}
       </div>
     </div>
   );
 }
 
-function HireCard({ applicant, vacancy, decision }) {
+function HireCard({ application, decision }) {
+  const user = application.user || {};
+  const vacancy = application.vacancy || {};
+  
   return (
     <div className="border border-green-200 rounded-lg p-4 bg-green-50">
       <div className="flex items-center space-x-3 mb-3">
         <div className="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center">
           <span className="text-sm font-bold text-white">
-            {applicant.firstName[0]}{applicant.lastName[0]}
+            {(user.firstName?.[0] || 'U')}{(user.lastName?.[0] || 'U')}
           </span>
         </div>
         <div>
           <h4 className="font-semibold text-gray-900">
-            {applicant.firstName} {applicant.lastName}
+            {user.firstName || 'Unknown'} {user.lastName || 'User'}
           </h4>
-          <p className="text-sm text-gray-600">{vacancy?.title}</p>
+          <p className="text-sm text-gray-600">{vacancy.title || 'Position not specified'}</p>
         </div>
       </div>
 
@@ -346,30 +343,31 @@ function HireCard({ applicant, vacancy, decision }) {
   );
 }
 
-function HiringDecisionModal({ applicant, onClose, onDecision }) {
+function HiringDecisionModal({ application, interviews, onClose, onDecision }) {
   const [formData, setFormData] = useState({
-    decision: 'Hire',
+    decision: 'SELECTED',
     reason: '',
     salaryOffered: '',
     startDate: '',
     notes: ''
   });
 
-  const vacancy = mockVacancies.find(v => v.id === applicant.vacancyId);
-  const interviews = mockInterviews.filter(i => i.applicantId === applicant.id && i.status === 'Completed');
+  const user = application.user || {};
+  const vacancy = application.vacancy || {};
+  const completedInterviews = interviews.filter(i => i.status === 'COMPLETED');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     const decision = {
-      applicantId: applicant.id,
-      vacancyId: applicant.vacancyId,
-      decision: formData.decision,
+      applicationId: application.id,
+      vacancyId: application.vacancy?.id || application.vacancyId,
+      decision: formData.decision, // Direct use of SELECTED, REJECTED, HOLD
       reason: formData.reason,
-      salaryOffered: formData.salaryOffered ? parseInt(formData.salaryOffered) : undefined,
-      startDate: formData.startDate || undefined,
-      decidedBy: 'HR001',
-      decidedDate: new Date().toISOString(),
-      notes: formData.notes
+      salaryOffered: formData.salaryOffered ? parseInt(formData.salaryOffered) : (formData.decision === 'SELECTED' ? 500000 : 0),
+      startDate: formData.startDate || (formData.decision === 'SELECTED' ? new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      notes: formData.notes || `${formData.decision === 'SELECTED' ? 'Selected' : formData.decision === 'REJECTED' ? 'Rejected' : 'On hold'} based on interview evaluation.`,
+      interviewerName: `HR Manager` // Will be set by backend from authenticated user
     };
     onDecision(decision);
   };
@@ -379,7 +377,7 @@ function HiringDecisionModal({ applicant, onClose, onDecision }) {
       <div className="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
         <div className="mt-3">
           <h3 className="text-xl font-semibold text-gray-900 mb-6">
-            Hiring Decision - {applicant.firstName} {applicant.lastName}
+            Hiring Decision - {user.firstName || 'Unknown'} {user.lastName || 'User'}
           </h3>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
@@ -389,20 +387,28 @@ function HiringDecisionModal({ applicant, onClose, onDecision }) {
               <div className="space-y-3">
                 <div>
                   <span className="text-sm font-medium text-gray-700">Position:</span>
-                  <span className="ml-2 text-sm text-gray-900">{vacancy?.title}</span>
+                  <span className="ml-2 text-sm text-gray-900">{vacancy.title || 'Not specified'}</span>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Experience:</span>
-                  <span className="ml-2 text-sm text-gray-900">{applicant.experience} years</span>
+                  <span className="text-sm font-medium text-gray-700">Email:</span>
+                  <span className="ml-2 text-sm text-gray-900">{user.email || 'Not provided'}</span>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Education:</span>
-                  <span className="ml-2 text-sm text-gray-900">{applicant.education}</span>
+                  <span className="text-sm font-medium text-gray-700">Phone:</span>
+                  <span className="ml-2 text-sm text-gray-900">{user.phoneNumber || 'Not provided'}</span>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Score:</span>
-                  <span className="ml-2 text-sm text-gray-900">{applicant.score}/100</span>
+                  <span className="text-sm font-medium text-gray-700">Application Date:</span>
+                  <span className="ml-2 text-sm text-gray-900">
+                    {new Date(application.createdAt || application.applicationDate).toLocaleDateString()}
+                  </span>
                 </div>
+                {application.coverLetter && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Cover Letter:</span>
+                    <p className="ml-2 text-sm text-gray-900 mt-1 line-clamp-3">{application.coverLetter}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -410,15 +416,26 @@ function HiringDecisionModal({ applicant, onClose, onDecision }) {
             <div className="bg-gray-50 rounded-lg p-6">
               <h4 className="font-semibold text-gray-900 mb-4">Interview Summary</h4>
               <div className="space-y-3">
-                {interviews.map((interview, index) => (
-                  <div key={interview.id} className="text-sm">
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Round {interview.round} ({interview.type}):</span>
-                      <span className="text-gray-900">{interview.result?.rating}/5</span>
+                {completedInterviews.length === 0 ? (
+                  <p className="text-sm text-gray-500">No completed interviews found</p>
+                ) : (
+                  completedInterviews.map((interview, index) => (
+                    <div key={interview.id} className="text-sm">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-700">
+                          {interview.type || 'Interview'} - {new Date(interview.scheduledDate).toLocaleDateString()}
+                        </span>
+                        <span className="text-gray-900">Completed</span>
+                      </div>
+                      <p className="text-gray-600 text-xs mt-1">
+                        Interviewer: {interview.interviewer || 'Not specified'}
+                      </p>
+                      {interview.notes && (
+                        <p className="text-gray-600 text-xs mt-1">{interview.notes}</p>
+                      )}
                     </div>
-                    <p className="text-gray-600 text-xs mt-1">{interview.result?.recommendation}</p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -427,23 +444,25 @@ function HiringDecisionModal({ applicant, onClose, onDecision }) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Decision</label>
               <div className="grid grid-cols-3 gap-3">
-                {(['Hire', 'Reject', 'Hold']).map((option) => (
+                {([
+                  { value: 'SELECTED', label: 'Selected', icon: UserCheck },
+                  { value: 'REJECTED', label: 'Rejected', icon: UserX },
+                  { value: 'HOLD', label: 'Hold', icon: Clock }
+                ]).map((option) => (
                   <button
-                    key={option}
+                    key={option.value}
                     type="button"
-                    onClick={() => setFormData({ ...formData, decision: option })}
+                    onClick={() => setFormData({ ...formData, decision: option.value })}
                     className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 ${
-                      formData.decision === option
-                        ? option === 'Hire' ? 'border-green-500 bg-green-50 text-green-700'
-                          : option === 'Reject' ? 'border-red-500 bg-red-50 text-red-700'
+                      formData.decision === option.value
+                        ? option.value === 'SELECTED' ? 'border-green-500 bg-green-50 text-green-700'
+                          : option.value === 'REJECTED' ? 'border-red-500 bg-red-50 text-red-700'
                           : 'border-yellow-500 bg-yellow-50 text-yellow-700'
                         : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    {option === 'Hire' && <UserCheck className="h-5 w-5 mx-auto mb-1" />}
-                    {option === 'Reject' && <UserX className="h-5 w-5 mx-auto mb-1" />}
-                    {option === 'Hold' && <Clock className="h-5 w-5 mx-auto mb-1" />}
-                    {option}
+                    <option.icon className="h-5 w-5 mx-auto mb-1" />
+                    {option.label}
                   </button>
                 ))}
               </div>
@@ -461,7 +480,7 @@ function HiringDecisionModal({ applicant, onClose, onDecision }) {
               />
             </div>
 
-            {formData.decision === 'Hire' && (
+            {formData.decision === 'SELECTED' && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Salary Offer (₹)</label>

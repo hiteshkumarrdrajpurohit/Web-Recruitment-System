@@ -152,9 +152,7 @@ export default function ApplicantDashboard() {
                     </span>
                     <span className="text-xs text-gray-400">
                       {job.salary
-                        ? `${job.salary.currency || "$"}${job.salary.min} - ${
-                            job.salary.currency || "$"
-                          }${job.salary.max}`
+                        ? `₹${job.salary.min?.toLocaleString('en-IN')} - ₹${job.salary.max?.toLocaleString('en-IN')}`
                         : ""}
                     </span>
                   </div>

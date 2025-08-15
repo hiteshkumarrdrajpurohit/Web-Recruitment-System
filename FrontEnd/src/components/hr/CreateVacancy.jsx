@@ -19,17 +19,19 @@ function CreateVacancyModal({ onClose, onSave }) {
       title: formData.title,
       department: formData.department,
       location: formData.location,
-      type: formData.type,
+      employementType: formData.type.toUpperCase().replace('-', '_'), // Convert to enum format
       description: formData.description,
-      responsibilities: formData.responsibilities
-        .split("\n")
-        .filter((r) => r.trim()),
-      salary: parseInt(formData.salary),
-      status: "Open",
-      postedDate: new Date().toISOString().split("T")[0],
-      deadline: formData.deadline,
-      applicantCount: 0,
-      createdBy: "HR001",
+      jobDescription: formData.description, // Duplicate for entity mapping
+      reponsibilites: formData.responsibilities, // Note: matches entity spelling
+      minSalary: parseInt(formData.salary), // Use Long instead of Double
+      maxSalary: Math.round(parseInt(formData.salary) * 1.2), // Set max as 20% higher, as Long
+      status: "ACTIVE",
+      applicationDeadline: formData.deadline, // Use LocalDate format (YYYY-MM-DD)
+      numberOfVacencies: 1, // Note: matches entity spelling
+      requiredEducation: "Bachelor's degree or equivalent",
+      requiredExperience: "2+ years relevant experience",
+      shiftDetails: "Day shift"
+      // hrManagerId removed - backend will use authenticated HR manager
     };
     onSave(vacancy);
   };
@@ -146,7 +148,7 @@ function CreateVacancyModal({ onClose, onSave }) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Offered Salary ($)
+                  Base Salary (₹) - Min Amount
                 </label>
                 <input
                   type="number"

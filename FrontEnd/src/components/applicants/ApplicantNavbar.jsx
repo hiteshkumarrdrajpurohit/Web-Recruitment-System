@@ -1,9 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '../../App';
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setUser(null); // This will also clear localStorage
+    navigate('/');
+  };
   // Fallback for initials and name
   const displayName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
   const initials = user?.name
@@ -49,12 +55,12 @@ export default function Navbar() {
         >
           Settings
         </Link>
-        <Link
-          to="/"
+        <button
+          onClick={handleLogout}
           className="font-medium text-red-600 hover:text-red-800 ml-2"
         >
           Logout
-        </Link>
+        </button>
         <div className="ml-4 flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center font-bold text-blue-700">
             {initials}
