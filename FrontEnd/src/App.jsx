@@ -24,7 +24,7 @@ import JobListings from "./components/applicants/JobListings";
 import ApplicantDashboard from "./components/applicants/ApplicantDashboard";
 import ApplicantSettings from "./components/applicants/ApplicantSettings";
 import ApplicantLayout from "./components/applicants/ApplicantLayout";
-
+import MyInterviews from "./components/applicants/MyInterviews";
 
 
 // Placeholder components for missing pages
@@ -134,6 +134,7 @@ function App() {
           <Route path="user/profile" element={<PrivateRoute><ApplicantProfile /></PrivateRoute>} />
           { <Route path="user/jobs" element={<PrivateRoute><JobListings /></PrivateRoute>} /> }
           <Route path="user/dashboard" element={<PrivateRoute><ApplicantDashboard /></PrivateRoute>} />
+          <Route path="user/interviews" element={<PrivateRoute><MyInterviews /></PrivateRoute>} />
           <Route path="user/applications" element={<PrivateRoute><MyApplications /></PrivateRoute>} />
           <Route path="user/settings" element={<PrivateRoute><ApplicantSettings /></PrivateRoute>} />
         </Route>

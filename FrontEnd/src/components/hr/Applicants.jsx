@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, UserCheck, UserX, RefreshCw } from 'lucide-react';
+import { Search, Filter, Download, Eye, UserCheck, UserX } from 'lucide-react';
 import { getAllApplications, updateApplicationStatus, getAllVacancies, getAllCandidates, createHiringDecision } from '../../services/hr';
 
 function HRApplicants() {
@@ -170,32 +170,17 @@ function HRApplicants() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Candidates</h1>
           <div className="mt-2 space-y-1">
-            <p className="text-sm text-gray-700">
-              View all candidates (USER role) and their application status. ({filteredCandidates.length} candidates)
-            </p>
             {(() => {
               const multipleApplicants = candidates.filter(candidate => {
                 const candidateApplications = applications.filter(app => app.user?.id === candidate.id);
                 return candidateApplications.length > 1;
               });
               const totalApplications = applications.filter(app => app.user?.role === 'USER').length;
-              return multipleApplicants.length > 0 && (
-                <p className="text-xs text-blue-600">
-                  📊 {multipleApplicants.length} candidates applied to multiple positions • {totalApplications} total applications
-                </p>
-              );
+              return multipleApplicants.length > 0 ;
             })()}
           </div>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <button
-            onClick={loadData}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </button>
-        </div>
+        
       </div>
 
       {/* Error Message */}
@@ -569,16 +554,6 @@ function CandidateDetailModal({ candidate, applications, onClose, onUpdateStatus
             </div>
           )}
         </div>
-        {hasApplications && applications.length > 1 && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium">
-              💡 Action buttons are available for each individual application above
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              You can manage each job application separately using the buttons in each application card.
-            </p>
-          </div>
-        )}
         </div>
       </div>
     </div>

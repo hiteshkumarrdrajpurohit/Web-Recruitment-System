@@ -12,7 +12,7 @@ import {
   CheckCircle,
   Star,
   Send,
-  RefreshCw
+  
 } from 'lucide-react';
 import { getAllHirings, getAllApplications, getAllVacancies, getAllInterviews, createHiringDecision } from '../../services/hr';
 
@@ -141,15 +141,7 @@ import { getAllHirings, getAllApplications, getAllVacancies, getAllInterviews, c
             Make hiring decisions and manage the final stages of recruitment.
           </p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <button
-            onClick={loadData}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </button>
-        </div>
+        
       </div>
 
       {/* Error Message */}

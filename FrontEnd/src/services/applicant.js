@@ -122,6 +122,24 @@ export async function getMyApplications() {
 }
 
 /**
+ * Get interviews by application ID (applicant-accessible)
+ */
+export async function getInterviewsByApplication(applicationId) {
+  try {
+    const url = `${config.serverURL}/interviews/application/${applicationId}`;
+    const response = await axios.get(url, {
+      headers: getAuthHeaders(),
+    });
+    if (response.status === 200) {
+      return { success: true, data: response.data };
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to fetch interviews" };
+  }
+}
+
+/**
  * Check if user has already applied for a specific vacancy
  */
 export async function hasAppliedForVacancy(vacancyId) {

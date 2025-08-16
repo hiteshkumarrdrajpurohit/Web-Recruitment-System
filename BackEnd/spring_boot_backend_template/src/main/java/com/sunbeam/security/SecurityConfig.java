@@ -61,6 +61,8 @@ public class SecurityConfig {
 					.requestMatchers("/users/candidates").hasRole("HRMANAGER")
 					.requestMatchers("/users/**", "/dashboard/applicant/**").hasRole("USER")
 					.requestMatchers("/applications/apply", "/applications/user/**", "/applications/my", "/applications/check-applied/**").hasRole("USER")
+					// Allow applicants to fetch interviews by application and by id
+					.requestMatchers("/interviews/application/**", "/interviews/*").hasAnyRole("HRMANAGER","USER")
 					.requestMatchers("/vacancies/all", "/applications", "/applications/**", "/interviews/**", "/hirings/**", "/dashboard/hr/**").hasRole("HRMANAGER")
 					.anyRequest().authenticated()
 				)

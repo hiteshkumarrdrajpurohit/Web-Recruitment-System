@@ -98,6 +98,24 @@ export async function getAllApplications() {
 }
 
 /**
+ * Delete application by ID (HR or Applicant)
+ */
+export async function deleteApplication(applicationId) {
+  try {
+    const url = `${config.serverURL}/applications/${applicationId}`;
+    const response = await axios.delete(url, {
+      headers: getAuthHeaders(),
+    });
+    if (response.status === 200) {
+      return { success: true, data: response.data };
+    }
+  } catch (ex) {
+    console.log(`exception: `, ex);
+    return { success: false, error: ex.response?.data?.message || "Failed to delete application" };
+  }
+}
+
+/**
  * Get applications for a specific vacancy
  */
 export async function getApplicationsByVacancy(vacancyId) {

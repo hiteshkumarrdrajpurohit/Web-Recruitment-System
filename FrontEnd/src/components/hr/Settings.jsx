@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-
-const hrUser = { name: 'HR User', email: 'hr@company.com' };
+import { getAllApplications, deleteApplication } from '../../services/hr';
 
 export default function Settings() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -15,25 +13,33 @@ export default function Settings() {
   const [loading, setLoading] = useState(true); // Step 4: Loading state
   const [deleteApplicantMsg, setDeleteApplicantMsg] = useState('');
 
-  // Step 2: Fetch applicants from backend
+  // Fetch applicants from backend
   useEffect(() => {
-  const fetchApplicants = async () => {
-    try {
-      // Mock data fallback
-      const data = [
-        { id: 1, firstName: 'Motli', lastName: 'dongare', email: 'motli@example.com', position: 'Frontend Developer', status: 'Interviewed' },
-        { id: 2, firstName: 'hitesh', lastName: 'karad', email: 'hr@example.com', position: 'Backend Developer', status: 'Pending' },
-      ];
-      setApplicants(data);
-    } catch (error) {
-      console.error('Failed to fetch applicants:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchApplicants = async () => {
+      try {
+        const result = await getAllApplications();
+        if (result.success) {
+          const rows = (result.data || []).map(app => ({
+            id: app.id,
+            firstName: app.user?.firstName || 'Unknown',
+            lastName: app.user?.lastName || 'User',
+            email: app.user?.email || '-',
+            position: app.vacancy?.title || 'Position not specified',
+            status: app.status || 'UNKNOWN'
+          }));
+          setApplicants(rows);
+        } else {
+          console.warn('Failed to load applications:', result.error);
+        }
+      } catch (error) {
+        console.error('Failed to fetch applicants:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchApplicants();
-}, []);
+    fetchApplicants();
+  }, []);
 
 
   const handlePasswordChange = (e) => {
@@ -53,19 +59,25 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = () => {
-    setDeleteMsg('HR account deleted! (Demo only)');
+    // TODO: Wire to backend endpoint when available
+    setDeleteMsg('Account deletion is not available at this time.');
   };
 
   const handleDeleteApplicant = async (id) => {
     try {
-      // Optional: call DELETE API
-      // await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
-
-      setApplicants(applicants.filter(a => a.id !== id));
-      setDeleteApplicantMsg('Applicant deleted! (Demo only)');
-      setTimeout(() => setDeleteApplicantMsg(''), 2000);
+      const result = await deleteApplication(id);
+      if (result.success) {
+        setApplicants(prev => prev.filter(a => a.id !== id));
+        setDeleteApplicantMsg('Application deleted successfully.');
+        setTimeout(() => setDeleteApplicantMsg(''), 2000);
+      } else {
+        setDeleteApplicantMsg(result.error || 'Failed to delete application');
+        setTimeout(() => setDeleteApplicantMsg(''), 3000);
+      }
     } catch (err) {
-      console.error('Error deleting applicant:', err);
+      console.error('Error deleting application:', err);
+      setDeleteApplicantMsg('Failed to delete application');
+      setTimeout(() => setDeleteApplicantMsg(''), 3000);
     }
   };
 

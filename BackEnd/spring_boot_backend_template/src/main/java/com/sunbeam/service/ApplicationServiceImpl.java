@@ -11,6 +11,7 @@ import com.sunbeam.custom_exceptions.InvalidInputException;
 import com.sunbeam.custom_exceptions.ResourceNotFoundException;
 import com.sunbeam.dao.ApplicationDao;
 import com.sunbeam.dao.UserDao;
+import com.sunbeam.dao.HiringDao;
 import com.sunbeam.dao.VacancyDao;
 import com.sunbeam.dto.ApplicationDTO;
 import com.sunbeam.dto.ApiResponse;
@@ -33,6 +34,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final UserDao userDao;
     private final VacancyDao vacancyDao;
     private final ModelMapper modelMapper;
+    private final HiringDao hiringDao;
 
     @Override
     public ApplicationDTO applyForJob(Long userId, Long vacancyId, String coverLetter) {
@@ -136,7 +138,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!applicationDao.existsById(applicationId)) {
             throw new ResourceNotFoundException("Application not found with ID: " + applicationId);
         }
-        
+        // Delete dependent hirings first to satisfy FK constraints
+        var hirings = hiringDao.findByApplicationId(applicationId);
+        if (!hirings.isEmpty()) {
+            hiringDao.deleteAll(hirings);
+        }
+        // Now delete application
         applicationDao.deleteById(applicationId);
         return new ApiResponse("Application deleted successfully");
     }

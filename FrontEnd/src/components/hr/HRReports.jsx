@@ -6,7 +6,7 @@ import {
   Calendar,
   Download,
   Filter,
-  RefreshCw,
+  
   Clock,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -92,14 +92,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
           <p className="text-sm text-gray-600">Track recruitment performance easily.</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => window.location.reload()}
-            className="flex items-center px-4 py-2 text-sm border rounded-md text-gray-700 bg-white hover:bg-gray-100"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </button>
-         
+        
         </div>
       </div>
 

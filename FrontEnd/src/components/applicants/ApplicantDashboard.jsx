@@ -68,28 +68,7 @@ export default function ApplicantDashboard() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-            <span className="text-2xl font-bold">{applications.length}</span>
-            <span className="text-gray-500 text-sm mt-1">
-              Applications Sent
-            </span>
-          </div>
-          <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-            <span className="text-2xl font-bold">
-              {applications.filter((app) => app.status === "reviewed").length}
-            </span>
-            <span className="text-gray-500 text-sm mt-1">In Review</span>
-          </div>
-          <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-            <span className="text-2xl font-bold">
-              {applications.filter((app) => app.status === "interview").length}
-            </span>
-            <span className="text-gray-500 text-sm mt-1">Interviews</span>
-          </div>
-          
-        </div>
+        
 
         {/* Applications & Featured Jobs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -178,7 +157,7 @@ export default function ApplicantDashboard() {
             <span className="font-medium">Browse Jobs</span>
           </Link>
           <Link
-           to="/applicantlayout/user/settings"
+           to="/applicantlayout/user/profile"
             className="flex items-center gap-3 bg-white rounded-lg p-4 shadow hover:bg-green-50"
           >
             <span className="bg-green-100 p-2 rounded">👤</span>

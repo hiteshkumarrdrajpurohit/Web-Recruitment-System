@@ -130,37 +130,7 @@ export default function MyApplications() {
         <p className="mb-2">Track the progress of your {stats.total} job application{stats.total !== 1 ? 's' : ''}</p>
       </div>
 
-      {/* Stats */}
-      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-7 gap-4 mb-6">
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.total}</span>
-          <span className="text-gray-500 text-sm mt-1">Total</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.pending}</span>
-          <span className="text-gray-500 text-sm mt-1">Pending</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.reviewed}</span>
-          <span className="text-gray-500 text-sm mt-1">Reviewed</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.shortlisted}</span>
-          <span className="text-gray-500 text-sm mt-1">Shortlisted</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.interviewed}</span>
-          <span className="text-gray-500 text-sm mt-1">Interviewed</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.hired}</span>
-          <span className="text-gray-500 text-sm mt-1">Hired</span>
-        </div>
-        <div className="bg-white rounded-lg p-4 flex flex-col items-center shadow">
-          <span className="text-2xl font-bold">{stats.rejected}</span>
-          <span className="text-gray-500 text-sm mt-1">Rejected</span>
-        </div>
-      </div>
+      
 
       {/* Filter Bar */}
       <div className="max-w-6xl mx-auto flex items-center gap-4 mb-4 px-2">

@@ -238,12 +238,7 @@ export default function JobListings() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <button 
-          onClick={loadJobs}
-          className="px-4 py-2 border rounded bg-white hover:bg-gray-50 transition-colors"
-        >
-          Refresh Jobs
-        </button>
+        
       </div>
 
       {/* Job List */}

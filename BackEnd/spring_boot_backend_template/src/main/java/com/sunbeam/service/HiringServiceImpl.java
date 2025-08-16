@@ -51,39 +51,84 @@ public class HiringServiceImpl implements HiringService {
 
     @Override
     public HiringDTO createHiring(HiringDTO hiringDTO) {
-        Hirings hiring = new Hirings();
-        
-        // Map basic fields with defaults for required fields
-        hiring.setInterviewerName(hiringDTO.getInterviewerName() != null ? hiringDTO.getInterviewerName() : "HR Manager");
-        hiring.setDecision(hiringDTO.getDecision());
-        hiring.setSalaryOffered(hiringDTO.getSalaryOffered() != null ? hiringDTO.getSalaryOffered() : 0L);
-        hiring.setStartDate(hiringDTO.getStartDate() != null ? hiringDTO.getStartDate() : java.time.LocalDate.now().plusDays(30));
-        hiring.setNotes(hiringDTO.getNotes());
-        
-        // Set relationships
+        // Upsert behavior: if a hiring exists for the application, update it; otherwise create new
+        Hirings hiring = null;
+
         if (hiringDTO.getApplicationId() != null) {
-            Application application = applicationDao.findById(hiringDTO.getApplicationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Application not found with ID: " + hiringDTO.getApplicationId()));
-            hiring.setApplication(application);
-            
-            // Auto-set vacancy from application if not provided
-            if (hiringDTO.getVacancyId() == null && application.getVacancy() != null) {
-                hiring.setVacancy(application.getVacancy());
+            hiring = hiringDao.findTopByApplicationIdOrderByCreatedAtDesc(hiringDTO.getApplicationId()).orElse(null);
+        }
+
+        if (hiring == null) {
+            hiring = new Hirings();
+
+            // Map basic fields with defaults for required fields
+            hiring.setInterviewerName(hiringDTO.getInterviewerName() != null ? hiringDTO.getInterviewerName() : "HR Manager");
+            hiring.setDecision(hiringDTO.getDecision());
+            hiring.setSalaryOffered(hiringDTO.getSalaryOffered() != null ? hiringDTO.getSalaryOffered() : 0L);
+            hiring.setStartDate(hiringDTO.getStartDate() != null ? hiringDTO.getStartDate() : java.time.LocalDate.now().plusDays(30));
+            hiring.setNotes(hiringDTO.getNotes());
+
+            // Set relationships
+            if (hiringDTO.getApplicationId() != null) {
+                Application application = applicationDao.findById(hiringDTO.getApplicationId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Application not found with ID: " + hiringDTO.getApplicationId()));
+                hiring.setApplication(application);
+
+                // Auto-set vacancy from application if not provided
+                if (hiringDTO.getVacancyId() == null && application.getVacancy() != null) {
+                    hiring.setVacancy(application.getVacancy());
+                }
+            }
+
+            if (hiringDTO.getVacancyId() != null) {
+                Vacancy vacancy = vacancyDao.findById(hiringDTO.getVacancyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Vacancy not found with ID: " + hiringDTO.getVacancyId()));
+                hiring.setVacancy(vacancy);
+            }
+
+            if (hiringDTO.getHrManagerId() != null) {
+                HrManager hrManager = hrManagerDao.findById(hiringDTO.getHrManagerId())
+                        .orElseThrow(() -> new ResourceNotFoundException("HR Manager not found with ID: " + hiringDTO.getHrManagerId()));
+                hiring.setHrManager(hrManager);
+            }
+        } else {
+            // Update basic fields if provided
+            if (hiringDTO.getInterviewerName() != null) {
+                hiring.setInterviewerName(hiringDTO.getInterviewerName());
+            }
+            if (hiringDTO.getDecision() != null) {
+                hiring.setDecision(hiringDTO.getDecision());
+            }
+            if (hiringDTO.getSalaryOffered() != null) {
+                hiring.setSalaryOffered(hiringDTO.getSalaryOffered());
+            }
+            if (hiringDTO.getStartDate() != null) {
+                hiring.setStartDate(hiringDTO.getStartDate());
+            }
+            if (hiringDTO.getNotes() != null) {
+                hiring.setNotes(hiringDTO.getNotes());
+            }
+
+            // Update relationships if provided
+            if (hiringDTO.getApplicationId() != null) {
+                Application application = applicationDao.findById(hiringDTO.getApplicationId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Application not found with ID: " + hiringDTO.getApplicationId()));
+                hiring.setApplication(application);
+            }
+
+            if (hiringDTO.getVacancyId() != null) {
+                Vacancy vacancy = vacancyDao.findById(hiringDTO.getVacancyId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Vacancy not found with ID: " + hiringDTO.getVacancyId()));
+                hiring.setVacancy(vacancy);
+            }
+
+            if (hiringDTO.getHrManagerId() != null) {
+                HrManager hrManager = hrManagerDao.findById(hiringDTO.getHrManagerId())
+                        .orElseThrow(() -> new ResourceNotFoundException("HR Manager not found with ID: " + hiringDTO.getHrManagerId()));
+                hiring.setHrManager(hrManager);
             }
         }
-        
-        if (hiringDTO.getVacancyId() != null) {
-            Vacancy vacancy = vacancyDao.findById(hiringDTO.getVacancyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Vacancy not found with ID: " + hiringDTO.getVacancyId()));
-            hiring.setVacancy(vacancy);
-        }
-        
-        if (hiringDTO.getHrManagerId() != null) {
-            HrManager hrManager = hrManagerDao.findById(hiringDTO.getHrManagerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("HR Manager not found with ID: " + hiringDTO.getHrManagerId()));
-            hiring.setHrManager(hrManager);
-        }
-        
+
         Hirings savedHiring = hiringDao.save(hiring);
         return convertToDTO(savedHiring);
     }

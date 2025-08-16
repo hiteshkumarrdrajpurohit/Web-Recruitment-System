@@ -10,11 +10,18 @@ export default function Navbar() {
     setUser(null); // This will also clear localStorage
     navigate('/');
   };
-  // Fallback for initials and name
-  const displayName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
-  const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-    : ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || 'U';
+  // Name and initials with better fallbacks (first+last -> name -> email prefix -> 'User')
+  const first = (user?.firstName || '').trim();
+  const last = (user?.lastName || '').trim();
+  const emailPrefix = (user?.email || '').split('@')[0] || '';
+  const displayName = (first || last)
+    ? `${first}${last ? ' ' + last : ''}`
+    : (user?.name || emailPrefix || 'User');
+  const initials = (first || last)
+    ? `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
+    : (user?.name
+        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        : (emailPrefix.slice(0, 2).toUpperCase() || 'U'));
 
   return (
     <nav className="bg-white border-b px-6 py-3 flex items-center justify-between">
@@ -42,6 +49,12 @@ export default function Navbar() {
           className="font-medium text-gray-700 hover:text-blue-600"
         >
           My Applications
+        </Link>
+        <Link
+          to="/applicantlayout/user/interviews"
+          className="font-medium text-gray-700 hover:text-blue-600"
+        >
+          My Interviews
         </Link>
         <Link
           to="/applicantlayout/user/profile"

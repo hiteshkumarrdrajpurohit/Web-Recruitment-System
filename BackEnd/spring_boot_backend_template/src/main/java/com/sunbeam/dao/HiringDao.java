@@ -1,6 +1,7 @@
 package com.sunbeam.dao;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,9 @@ public interface HiringDao extends JpaRepository<Hirings, Long> {
 
     // Find hirings by application ID
     List<Hirings> findByApplicationId(Long applicationId);
+    
+    // Find the latest hiring by application ID
+    Optional<Hirings> findTopByApplicationIdOrderByCreatedAtDesc(Long applicationId);
     
     // Find hirings by application ID with details
     @Query("SELECT h FROM Hirings h JOIN FETCH h.application a JOIN FETCH a.user JOIN FETCH h.vacancy JOIN FETCH h.hrManager hr JOIN FETCH hr.user WHERE a.id = :applicationId")
