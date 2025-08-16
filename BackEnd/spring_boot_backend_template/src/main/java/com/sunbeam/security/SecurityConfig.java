@@ -40,7 +40,13 @@ public class SecurityConfig {
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
+		configuration.setAllowedOriginPatterns(Arrays.asList(
+			"http://localhost:*",
+			"http://127.0.0.1:*",
+			"http://65.0.139.127:*",
+			"https://ec2-43-204-228-176.ap-south-1.compute.amazonaws.com",
+			"https://*.cloudfront.net"
+		));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 		configuration.setAllowCredentials(true);
